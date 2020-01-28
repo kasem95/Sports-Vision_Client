@@ -92,6 +92,7 @@ class Login extends React.Component {
     this.setState({
       apiIsFetchingData: true
     })
+    await Facebook.initializeAsync(AppID)
     const { type, token } = await Facebook.logInWithReadPermissionsAsync(AppID,
       { permissions: ['public_profile', 'email'], });
     if (type === 'success') {
