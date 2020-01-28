@@ -17,7 +17,7 @@ class UserToAddFriendsComponent extends React.Component {
             friendID: this.props.UserID
         };
         console.log(data)
-        await fetch(`http://10.0.0.6:3000/addFriend`, {
+        await fetch(`http://10.0.0.16:3000/addFriend`, {
             method: "POST",
             body: JSON.stringify(data),
             headers: {

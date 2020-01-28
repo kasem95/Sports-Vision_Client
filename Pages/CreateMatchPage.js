@@ -107,7 +107,7 @@ class CreateMatchPage extends React.Component {
     onChangeKeyCheckBox = () => {
         this.setState(prevState => ({
             keyCheckBox: !prevState.keyCheckBox
-        }))
+        }),console.log("keycheckbox = " + this.state.keyCheckBox))
     }
 
     onMaxPlayersChange = (val) => {

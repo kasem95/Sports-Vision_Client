@@ -37,7 +37,7 @@ class FriendComponent extends React.Component {
             friendID: this.props.UserID
         };
         console.log(data)
-        await fetch(`http://10.0.0.6:3000/deleteFriend`, {
+        await fetch(`http://10.0.0.16:3000/deleteFriend`, {
             method: "delete",
             body: JSON.stringify(data),
             headers: {
@@ -66,7 +66,7 @@ class FriendComponent extends React.Component {
             userID: this.props.UserID
         };
         console.log(data)
-        await fetch(`http://10.0.0.6:3000/acceptAddFriend`, {
+        await fetch(`http://10.0.0.16:3000/acceptAddFriend`, {
             method: "PUT",
             body: JSON.stringify(data),
             headers: {
