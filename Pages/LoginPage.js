@@ -11,6 +11,11 @@ const googleIOSClientID = "478192099665-t6ehj9l5jjsgnl6skpj0o7kie2t43anj.apps.go
 const googleAndroidClientID = "478192099665-0rp515m0fkgqebev04qompgtc7ms25m9.apps.googleusercontent.com"
 
 class Login extends React.Component {
+
+  static navigationOptions = {
+    title: 'LOGIN'
+  }
+
   constructor(props) {
     super(props);
 
@@ -40,12 +45,11 @@ class Login extends React.Component {
 
 
   login = async () => {
-    this.setState({
+    this.state.email === "" && this.setState({ emailInvalid: true }, () => Toast.show({ text: 'Enter email!', buttonText: 'Okay', type: 'danger', duration: 10000 }))
+    this.state.password === "" && this.setState({ passwordInvalid: true }, () => Toast.show({ text: 'Enter password!', buttonText: 'Okay', type: 'danger', duration: 10000 }))
+    this.state.password !== "" && this.state.email !== "" && this.setState({
       apiIsFetchingData: true
-    })
-    this.state.email === "" && this.setState({ emailInvalid: true }, () => Toast.show({ text: 'Enter email!', buttonText: 'Okay', type: 'danger' }))
-    this.state.password === "" && this.setState({ passwordInvalid: true }, () => Toast.show({ text: 'Enter password!', buttonText: 'Okay', type: 'danger' }))
-    this.state.password !== "" && this.state.email !== "" &&
+    }, async () => {
       await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Users/${this.state.email},${this.state.password}/login`, {
         method: 'GET',
         headers: new Headers({
@@ -53,7 +57,7 @@ class Login extends React.Component {
         })
       })
         .then(res => {
-          console.log("res=", res);
+          //console.log("res=", res);
           return res.json();
         })
         .then(
@@ -63,16 +67,22 @@ class Login extends React.Component {
               this.setState({
                 apiIsFetchingData: false
               })
-              alert(result);
+              Toast.show({ text: result, buttonText: 'Okay', type: 'danger', duration: 10000 })
             } else {
               this.setState({
                 apiIsFetchingData: false
               })
-              //console.log(result)
+              console.log(result)
               let user = new User(result.UserID, result.Email, result.Password, result.Username, result.PhotoName);
               this.props.rootStore.UserStore.insertUser(user);
               AsyncStorage.setItem('user', JSON.stringify(user))
-              AsyncStorage.setItem('faceORG', '-1')
+              if (result.PhotoName.slice(0, 8) !== "https://") {
+                this.props.rootStore.UserStore.setFaceORGLogin(-1)
+                AsyncStorage.setItem('faceORG', '-1')
+              } else {
+                this.props.rootStore.UserStore.setFaceORGLogin(1)
+                AsyncStorage.setItem('faceORG', '1')
+              }
               this.setState({
                 apiIsFetchingData: false
               })
@@ -86,6 +96,7 @@ class Login extends React.Component {
             console.log("=> err post=", error);
           }
         );
+    })
   }
 
   btnLoginFB = async () => {
@@ -102,8 +113,8 @@ class Login extends React.Component {
         fetch(`https://graph.facebook.com/me?fields=id,name,email,picture.type(large)&access_token=${token}`);
       let res = await response.json();
       this.props.rootStore.UserStore.FBToken = token;
-      alert('Logged in!' + `Hi NAME: ${res.name}!\nEMAIL: ${res.email}\nPICTURE:
-    ${res.picture}\nRES:${JSON.stringify(res)} `);
+      /*alert('Logged in!' + `Hi NAME: ${res.name}!\nEMAIL: ${res.email}\nPICTURE:
+    ${res.picture}\nRES:${JSON.stringify(res)} `);*/
 
       console.log(JSON.stringify(res))
 
@@ -122,7 +133,7 @@ class Login extends React.Component {
         }
       })
         .then(res => {
-          console.log("res=", res);
+          //console.log("res=", res);
           return res.json();
         })
         .then(
@@ -133,11 +144,16 @@ class Login extends React.Component {
             console.log("fetch GET= ", result);
             let u = JSON.parse(result.d);
             console.log(u)
-            let u2 = new User(u.UserID, u.Email, u.Password, u.Username, res.picture.data.url);
+            let u2 = new User(u.UserID, u.Email, u.Password, u.Username, u.PhotoName);
             this.props.rootStore.UserStore.user = u2;
             AsyncStorage.setItem('user', JSON.stringify(u2))
-            AsyncStorage.setItem('faceORG', '1')
-            this.props.rootStore.UserStore.setFaceORGLogin()
+            if (u.PhotoName.slice(0, 8) === "https://") {
+              this.props.rootStore.UserStore.setFaceORGLogin(1)
+              AsyncStorage.setItem('faceORG', '1')
+            } else {
+              this.props.rootStore.UserStore.setFaceORGLogin(-1)
+              AsyncStorage.setItem('faceORG', '-1')
+            }
             this.props.navigation.navigate("App");
           },
           error => {
@@ -172,6 +188,11 @@ class Login extends React.Component {
 
       if (res.type === 'success') {
         console.log(res.user);
+        let userInfoResponse = await fetch('https://www.googleapis.com/userinfo/v2/me', {
+          headers: { Authorization: `Bearer ${res.accessToken}` },
+        });
+        console.log("user info response = " + JSON.stringify(userInfoResponse))
+        console.log("user = " + JSON.stringify(res.user))
         let usertemp = {
           id: res.user.id,
           username: res.user.name,
@@ -188,7 +209,7 @@ class Login extends React.Component {
           }
         })
           .then(res => {
-            console.log("res=", res);
+            //console.log("res=", res);
             return res.json();
           })
           .then(
@@ -198,11 +219,16 @@ class Login extends React.Component {
               })
               console.log("fetch GET= ", result);
               u = JSON.parse(result.d);
-              let u2 = new User(u.UserID, u.Email, u.Password, u.Username, res.user.photoUrl);
+              let u2 = new User(u.UserID, u.Email, u.Password, u.Username, u.PhotoName);
               this.props.rootStore.UserStore.user = u2;
               AsyncStorage.setItem('user', JSON.stringify(u2))
-              AsyncStorage.setItem('faceORG', '1')
-              this.props.rootStore.UserStore.setFaceORGLogin()
+              if (u.PhotoName.slice(0, 8) === "https://") {
+                this.props.rootStore.UserStore.setFaceORGLogin(1)
+                AsyncStorage.setItem('faceORG', '1')
+              }else {
+                this.props.rootStore.UserStore.setFaceORGLogin(-1)
+                AsyncStorage.setItem('faceORG', '-1')
+              }
               this.props.navigation.navigate("App");
             },
             error => {
@@ -231,7 +257,7 @@ class Login extends React.Component {
 
 
         <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
-          <Container>
+          <Container style={{ backgroundColor: 'rgb(48,48,48)' }}>
 
             <Content padder>
               <Image source={require('../assets/Sports-Vision.png')} style={{
@@ -244,10 +270,12 @@ class Login extends React.Component {
               <ScrollView>
                 <Form>
                   <Item fixedLabel error={this.state.emailInvalid}>
-                    <Input placeholder="Email" onChangeText={val => this.changeEmail(val)} />
+                    <Input placeholder="Email" onChangeText={val => this.changeEmail(val)} style={{ color: 'rgb(204,204,204)' }} />
+                    <Icon name='close-circle' />
                   </Item>
                   <Item fixedLabel error={this.state.passwordInvalid}>
-                    <Input secureTextEntry={true} placeholder="Password" onChangeText={val => this.changePass(val)} />
+                    <Input secureTextEntry={true} placeholder="Password" onChangeText={val => this.changePass(val)} style={{ color: 'rgb(204,204,204)' }} />
+                    <Icon name='close-circle' />
                   </Item>
                 </Form>
                 <Content >

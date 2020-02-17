@@ -3,7 +3,7 @@ import { Dimensions, Platform, Image } from 'react-native'
 import { Text, Content, Button, Container, Item, Label, Title } from 'native-base'
 import { observer, inject } from 'mobx-react';
 import Modal from "react-native-modal";
-import FriendsInviteComponent from '../Components/FriendsInviteComponent'
+import FriendsInviteGroupComponent from '../Components/FriendsInviteGroupComponent'
 
 const width = Dimensions.get('window').width
 const height = Dimensions.get('window').height
@@ -11,7 +11,7 @@ const height = Dimensions.get('window').height
 ? Dimensions.get("window").height
 : ExtraDimensions.getRealWindowHeight();*/
 
-class FriendsInviteModal extends React.Component {
+class FriendsInviteGroupModal extends React.Component {
     constructor(props) {
         super(props)
 
@@ -49,7 +49,7 @@ class FriendsInviteModal extends React.Component {
                             : user.ProfilePIC)
 
                     return (
-                        <FriendsInviteComponent key={user.User_ID} userID={user.User_ID} image={picture} username={user.Username} email={user.Email} MatchDetails={this.props.MatchDetails} refreshMatches={this.props.refreshMatches} />
+                        <FriendsInviteGroupComponent key={user.User_ID} userID={user.User_ID} image={picture} username={user.Username} email={user.Email} GroupDetails={this.props.GroupDetails} refreshGroups={this.props.refreshGroups} />
                     )
                 })
             }, () => console.log("friends list = " + JSON.stringify(this.state.friendsList)))
@@ -85,4 +85,4 @@ class FriendsInviteModal extends React.Component {
     }
 }
 
-export default inject('rootStore')(observer(FriendsInviteModal));
+export default inject('rootStore')(observer(FriendsInviteGroupModal));

@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardItem, Left, Body, Button, Right, Text, Thumbnail, Item, Content, Toast } from 'native-base';
 import { observer, inject } from 'mobx-react';
 
-class UserInMatchComponent extends React.Component {
+class UserInGroupComponent extends React.Component {
 
 
     constructor(props) {
@@ -18,26 +18,26 @@ class UserInMatchComponent extends React.Component {
     }
 
     updateState = () => {
-        if (this.props.MatchAdmin === this.props.rootStore.UserStore.user.userID) {
-            if (this.props.MatchAdmin === this.props.userDetails.User_ID) {
+        if (this.props.GroupAdmin === this.props.rootStore.UserStore.user.userID) {
+            if (this.props.GroupAdmin === this.props.userDetails.User_ID) {
                 this.setState({
                     btn: <Text style={{ color: 'rgb(204,204,204)' }}>ADMIN</Text>
                 })
             }
             else {
-                if (this.props.userInMatch === 0) {
+                if (this.props.userInGroup === 0) {
                     this.setState({
                         btn: <Button rounded success onPress={this.kickPlayer}>
                             <Text>KICK</Text>
                         </Button>
                     })
-                } else if (this.props.userInMatch === 1) {
+                } else if (this.props.userInGroup === 1) {
                     this.setState({
                         btn: <Button rounded success onPress={this.kickPlayer}>
                             <Text>KICK</Text>
                         </Button>
                     })
-                } else if (this.props.userInMatch === 2) {
+                } else if (this.props.userInGroup === 2) {
                     this.setState({
                         btn: <Content>
                             <Button rounded success onPress={this.accept}>
@@ -49,7 +49,7 @@ class UserInMatchComponent extends React.Component {
                         </Content>
                     })
                 }
-                else if (this.props.userInMatch === 3) {
+                else if (this.props.userInGroup === 3) {
                     this.setState({
                         btn: <Content>
                             <Text style={{ color: 'rgb(204,204,204)' }}>PENDING...</Text>
@@ -62,7 +62,7 @@ class UserInMatchComponent extends React.Component {
             }
         }
         else {
-            if (this.props.MatchAdmin === this.props.userDetails.User_ID) {
+            if (this.props.GroupAdmin === this.props.userDetails.User_ID) {
                 this.setState({
                     btn: <Text style={{ color: 'rgb(204,204,204)' }}>ADMIN</Text>
                 })
@@ -72,10 +72,11 @@ class UserInMatchComponent extends React.Component {
 
     cancelInvite = async () => {
         let details = {
-            MatchID: this.props.MatchDetails.Match_ID,
-            UserID: this.props.userDetails.User_ID,
+            Group_ID: this.props.GroupDetails.Group_ID,
+            Admin_ID: this.props.userDetails.User_ID,
         }
-        await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Matches/CancelInvite`, {
+        console.log("Cancel invite = " + JSON.stringify(details))
+        await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Groups/CancelGroupInvite`, {
             method: 'DELETE',
             body: JSON.stringify(details),
             headers: {
@@ -92,7 +93,7 @@ class UserInMatchComponent extends React.Component {
                     console.log("fetch GET= ", result);
                     if (result === "Done!") {
                         console.log("im in done if!!")
-                        await this.props.rootStore.MatchStore.insertLastModal(details.MatchID)
+                        await this.props.rootStore.GroupsStore.insertLastModal(details.GroupID)
                         await this.props.refreshUsers()
                     }
                     else {
@@ -108,10 +109,10 @@ class UserInMatchComponent extends React.Component {
 
     cancelRequest = async () => {
         let details = {
-            MatchID: this.props.MatchDetails.Match_ID,
-            UserID: this.props.userDetails.User_ID,
+            Group_ID: this.props.GroupDetails.Group_ID,
+            Admin_ID: this.props.userDetails.User_ID,
         }
-        await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Matches/CancelRequest`, {
+        await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Groups/CancelGroupRequest`, {
             method: 'DELETE',
             body: JSON.stringify(details),
             headers: {
@@ -128,7 +129,7 @@ class UserInMatchComponent extends React.Component {
                     console.log("fetch GET= ", result);
                     if (result === "Done!") {
                         console.log("im in done if!!")
-                        await this.props.rootStore.MatchStore.insertLastModal(details.MatchID)
+                        await this.props.rootStore.GroupsStore.insertLastModal(details.GroupID)
                         await this.props.refreshUsers()
                     }
                     else {
@@ -143,21 +144,13 @@ class UserInMatchComponent extends React.Component {
     }
 
     accept = async () => {
-        let date = new Date(this.props.MatchDetails.Match_Date)
         let details = {
-            matchID: this.props.MatchDetails.Match_ID,
+            groupID: this.props.GroupDetails.Group_ID,
             userID: this.props.userDetails.User_ID,
-            matchDate: date.getMonth() + 1
-                + '-' + date.getDate() + '-' +
-                date.getFullYear(),
-            matchTime: this.props.MatchDetails.Match_Time.slice(0, 5),
-            playTime: this.props.MatchDetails.Play_Time,
-            cityID: this.props.MatchDetails.City_ID,
-            fieldID: this.props.MatchDetails.Field_ID,
-            maxPlayer: this.props.MatchDetails.Max_Players,
+            maxPlayer: this.props.GroupDetails.Max_Players,
             IsInvite: false
         }
-        await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Matches/acceptRequestJoinMatch`, {
+        await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Groups/acceptRequestJoinGroup`, {
             method: 'PUT',
             body: JSON.stringify(details),
             headers: {
@@ -174,7 +167,7 @@ class UserInMatchComponent extends React.Component {
                     console.log("fetch GET= ", result);
                     if (result === "Done!") {
                         console.log("im in Done if!!")
-                        await this.props.rootStore.MatchStore.insertLastModal(details.matchID)
+                        await this.props.rootStore.GroupsStore.insertLastModal(details.groupID)
                         await this.props.refreshUsers()
                     }
                     else {
@@ -189,18 +182,14 @@ class UserInMatchComponent extends React.Component {
     }
 
     kickPlayer = async () => {
-        let date = new Date(this.props.MatchDetails.Match_Date)
         let details = {
-            MatchID: this.props.MatchDetails.Match_ID,
-            MatchDate: date.getMonth() + 1
-                + '-' + date.getDate() + '-' +
-                date.getFullYear(),
-            AdminID: this.props.MatchDetails.Admin_ID,
+            GroupID: this.props.GroupDetails.Group_ID,
+            AdminID: this.props.GroupDetails.Admin_ID,
             UserID: this.props.userDetails.User_ID,
-            PlayersJoined: this.props.MatchDetails.Players_Joined
+            Users_Joined: this.props.GroupDetails.Users_Joined
         }
         console.log('details' + JSON.stringify(details))
-        await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Matches/ExitMatch`, {
+        await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Groups/ExitGroup`, {
             method: 'PUT',
             body: JSON.stringify(details),
             headers: {
@@ -217,7 +206,7 @@ class UserInMatchComponent extends React.Component {
                     console.log("fetch GET= ", result);
                     if (result === "Done!") {
                         console.log("im in done if!!")
-                        await this.props.rootStore.MatchStore.insertLastModal(details.MatchID)
+                        await this.props.rootStore.GroupsStore.insertLastModal(details.GroupID)
                         await this.props.refreshUsers()
                     }
                     else {
@@ -252,4 +241,4 @@ class UserInMatchComponent extends React.Component {
 
 }
 
-export default inject('rootStore')(observer(UserInMatchComponent));
+export default inject('rootStore')(observer(UserInGroupComponent));

@@ -21,42 +21,44 @@ class FriendsTab extends React.Component {
 
     componentDidMount() {
         this.setState({
-            userList: this.props.rootStore.FriendsStore.friendsList !== undefined && 
-            this.props.rootStore.FriendsStore.friendsList.length !== 0 &&
-             this.props.rootStore.FriendsStore.friendsList.map(friend => {
-                let picture = friend.ProfilePIC === null ? ""
-                    : (friend.Google_ID === null && friend.Facebook_ID === null ?
-                        `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${friend.ProfilePIC}`
-                        : friend.ProfilePIC)
+            userList: this.props.rootStore.FriendsStore.friendsList !== undefined &&
+                this.props.rootStore.FriendsStore.friendsList.length !== 0 &&
+                this.props.rootStore.FriendsStore.friendsList.map(friend => {
+                    let picture = friend.ProfilePIC === null || friend.ProfilePIC === undefined ? ""
+                        : (friend.ProfilePIC.slice(0, 8) !== "https://" ?
+                            `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${friend.ProfilePIC}`
+                            : friend.ProfilePIC)
 
-                return (
-                    <FriendComponent key={friend.User_ID}
-                        IsFriends={0}
-                        UserID={friend.User_ID}
-                        Username={friend.Username}
-                        ProfilePIC={picture}
-                        RemoveComponent={() => this.remove(friend.User_ID)} />
-                )
-            })
+                    return (
+                        <FriendComponent key={friend.User_ID}
+                            IsFriends={0}
+                            UserID={friend.User_ID}
+                            Username={friend.Username}
+                            Email={friend.Email}
+                            ProfilePIC={picture}
+                            RemoveComponent={() => this.remove(friend.User_ID)} />
+                    )
+                })
         })
     }
 
     remove = (userID) => {
-        let list = this.props.rootStore.FriendsStore.friendsList !== undefined && 
-        this.props.rootStore.FriendsStore.friendsList.length !== 0 && this.props.rootStore.FriendsStore.friendsList.filter(user => userID !== user.User_ID)
+        let list = this.props.rootStore.FriendsStore.friendsList !== undefined &&
+            this.props.rootStore.FriendsStore.friendsList.length !== 0 && this.props.rootStore.FriendsStore.friendsList.filter(user => userID !== user.User_ID)
         this.props.rootStore.FriendsStore.friendsList = list;
         this.setState({
             userList: list !== undefined && list.length !== 0 && list.map(friend => {
-                let picture = friend.ProfilePIC === null ? ""
-                    : (friend.Google_ID === null && friend.Facebook_ID === null ?
-                        `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${friend.ProfilePIC}`
-                        : friend.ProfilePIC)
+                let picture = friend.ProfilePIC === null || friend.ProfilePIC === undefined ? ""
+                        : (friend.ProfilePIC.slice(0, 8) !== "https://" ?
+                            `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${friend.ProfilePIC}`
+                            : friend.ProfilePIC)
 
                 return (
                     <FriendComponent key={friend.User_ID}
                         IsFriends={0}
                         UserID={friend.User_ID}
                         Username={friend.Username}
+                        Email={friend.Email}
                         ProfilePIC={picture}
                         RemoveComponent={() => this.remove(friend.User_ID)} />
                 )
@@ -72,23 +74,24 @@ class FriendsTab extends React.Component {
         await this.props.rootStore.FriendsStore.getFriendsList(this.props.rootStore.UserStore.user.userID)
 
         this.setState(prevState => ({
-            userList: this.props.rootStore.FriendsStore.friendsList !== undefined && 
-            this.props.rootStore.FriendsStore.friendsList.length !== 0 &&
-             this.props.rootStore.FriendsStore.friendsList.map(friend => {
-                let picture = friend.ProfilePIC === null ? ""
-                    : (friend.Google_ID === null && friend.Facebook_ID === null ?
-                        `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${friend.ProfilePIC}`
-                        : friend.ProfilePIC)
+            userList: this.props.rootStore.FriendsStore.friendsList !== undefined &&
+                this.props.rootStore.FriendsStore.friendsList.length !== 0 &&
+                this.props.rootStore.FriendsStore.friendsList.map(friend => {
+                    let picture = friend.ProfilePIC === null || friend.ProfilePIC === undefined ? ""
+                        : (friend.ProfilePIC.slice(0, 8) !== "https://" ?
+                            `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${friend.ProfilePIC}`
+                            : friend.ProfilePIC)
 
-                return (
-                    <FriendComponent key={friend.User_ID}
-                        IsFriends={0}
-                        UserID={friend.User_ID}
-                        Username={friend.Username}
-                        ProfilePIC={picture}
-                        RemoveComponent={() => this.remove(friend.User_ID)} />
-                )
-            }),
+                    return (
+                        <FriendComponent key={friend.User_ID}
+                            IsFriends={0}
+                            UserID={friend.User_ID}
+                            Username={friend.Username}
+                            Email={friend.Email}
+                            ProfilePIC={picture}
+                            RemoveComponent={() => this.remove(friend.User_ID)} />
+                    )
+                }),
             refreshing: !prevState.refreshing
         }))
     }

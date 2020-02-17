@@ -1,10 +1,10 @@
 import React from 'react';
-import { Dimensions, Platform, Image } from 'react-native'
-import { Text, Content, Button, Container, Item, Label, Title, Thumbnail, Right } from 'native-base'
+import { Dimensions, Platform } from 'react-native'
+import { Text, Content, Button, Container, Item, Label, Thumbnail } from 'native-base'
 import { observer, inject } from 'mobx-react';
 import Modal from "react-native-modal";
-import UsersInMatchComponent from '../Components/UserInMatchComponent';
-import FriendsInviteModal from '../Modals/FriendsInviteModal'
+import FriendsInviteGroupModal from '../Modals/FriendsInviteGroupModal'
+import UsersInGroupComponent from '../Components/UserInGroupComponent';
 
 const width = Dimensions.get('window').width
 const height = Dimensions.get('window').height
@@ -12,15 +12,15 @@ const height = Dimensions.get('window').height
 ? Dimensions.get("window").height
 : ExtraDimensions.getRealWindowHeight();*/
 
-class MatchModal extends React.Component {
+class GroupModal extends React.Component {
     constructor(props) {
         super(props)
 
         this.state = {
             usersRequestToJoin: [],
-            usersInvitedToMatchNotAccepted: [],
-            UsersInMatch: [],
-            UsersInvitedToMatch: [],
+            usersInvitedToGroupNotAccepted: [],
+            UsersInGroup: [],
+            UsersInvitedToGroup: [],
             btn: this.props.btn,
             friendsInviteModalVisible: false
         }
@@ -28,33 +28,21 @@ class MatchModal extends React.Component {
 
     async componentDidMount() {
         await this.updateState()
-        //this.Btn()
         await this.setState({ btn: this.props.btn })
-        if(this.props.rootStore.MatchStore.lastFriendsInviteModal === this.props.MatchDetails.Match_ID)
+        if(this.props.rootStore.GroupsStore.lastFriendsInviteModal === this.props.GroupDetails.Group_ID)
         {
-            this.props.rootStore.MatchStore.saveLastFriendsInviteModal(undefined)
+            this.props.rootStore.GroupsStore.saveLastFriendsInviteModal(undefined)
             this.setState({friendsInviteModalVisible: true});
         }
 
     }
 
-    clearUsers = () => {
-        this.setState({
-            usersRequestToJoin: [],
-            usersInvitedToMatchNotAccepted: [],
-            UsersInMatch: [],
-            UsersInvitedToMatch: [],
-        }, () => this.updateState())
-    }
-
     updateState = async () => {
-        await this.props.rootStore.MatchStore.getUsersInMatches()
-        await this.props.rootStore.MatchStore.getUsersInvitedToMatches()
-        if (this.props.MatchDetails.Admin_ID === this.props.rootStore.UserStore.user.userID) {
+        if (this.props.GroupDetails.Admin_ID === this.props.rootStore.UserStore.user.userID) {
             this.setState({
-                UsersInMatch: this.props.rootStore.MatchStore.UsersInMatches !== undefined &&
-                    this.props.rootStore.MatchStore.UsersInMatches.length !== 0 ? this.props.rootStore.MatchStore.UsersInMatches.map(user => {
-                        if (user.Accepted && this.props.MatchDetails.Match_ID === user.Match_ID) {
+                UsersInGroup: this.props.rootStore.GroupsStore.UsersInGroups !== undefined &&
+                    this.props.rootStore.GroupsStore.UsersInGroups.length !== 0 ? this.props.rootStore.GroupsStore.UsersInGroups.map(user => {
+                        if (user.Accepted && this.props.GroupDetails.Group_ID === user.Group_ID) {
                             let userDetails = this.props.rootStore.UserStore.users.filter(u => u.User_ID === user.User_ID)[0]
                             let picture = userDetails.ProfilePIC === null || userDetails.ProfilePIC === undefined ? ""
                                 : (userDetails.ProfilePIC.slice(0, 8) !== "https://" ?
@@ -63,13 +51,13 @@ class MatchModal extends React.Component {
 
                             console.log("kkkkkkkkkkkkkkkkkkk  " + userDetails.User_ID)
                             return (
-                                <UsersInMatchComponent key={user.UserInMatch_ID} MatchDetails={this.props.MatchDetails} userDetails={userDetails} MatchAdmin={this.props.MatchDetails.Admin_ID} userPIC={picture} userInMatch={0} refreshUsers={this.props.refreshMatches} />
+                                <UsersInGroupComponent key={user.UserInGroup_ID} GroupDetails={this.props.GroupDetails} userDetails={userDetails} GroupAdmin={this.props.GroupDetails.Admin_ID} userPIC={picture} userInGroup={0} refreshUsers={this.props.refreshGroups} />
                             )
                         }
                     }) : [],
-                UsersInvitedToMatch: this.props.rootStore.MatchStore.UsersInvitedToMatches !== undefined &&
-                    this.props.rootStore.MatchStore.UsersInvitedToMatches.length !== 0 ? this.props.rootStore.MatchStore.UsersInvitedToMatches.map(user => {
-                        if (user.Accepted && this.props.MatchDetails.Match_ID === user.Match_ID) {
+                UsersInvitedToGroup: this.props.rootStore.GroupsStore.UsersInvitedToGroups !== undefined &&
+                    this.props.rootStore.GroupsStore.UsersInvitedToGroups.length !== 0 ? this.props.rootStore.GroupsStore.UsersInvitedToGroups.map(user => {
+                        if (user.Accepted && this.props.GroupDetails.Group_ID === user.Group_ID) {
                             let userDetails = this.props.rootStore.UserStore.users.filter(u => u.User_ID === user.User_ID)[0]
                             let picture = userDetails.ProfilePIC === null || userDetails.ProfilePIC === undefined ? ""
                                 : (userDetails.ProfilePIC.slice(0, 8) !== "https://" ?
@@ -78,13 +66,13 @@ class MatchModal extends React.Component {
 
                             console.log("kkkkkkkkkkkkkkkkkkk  " + userDetails.User_ID)
                             return (
-                                <UsersInMatchComponent key={user.UserInvitedToMatch_ID} MatchDetails={this.props.MatchDetails} userDetails={userDetails} MatchAdmin={this.props.MatchDetails.Admin_ID} userPIC={picture} userInMatch={1} refreshUsers={this.props.refreshMatches} />
+                                <UsersInGroupComponent key={user.UserInvitedToGroup_ID} GroupDetails={this.props.GroupDetails} userDetails={userDetails} GroupAdmin={this.props.GroupDetails.Admin_ID} userPIC={picture} userInGroup={1} refreshUsers={this.props.refreshGroups} />
                             )
                         }
                     }) : [],
-                usersRequestToJoin: this.props.rootStore.MatchStore.UsersInMatches !== undefined &&
-                    this.props.rootStore.MatchStore.UsersInMatches.length !== 0 ? this.props.rootStore.MatchStore.UsersInMatches.map(user => {
-                        if (!user.Accepted && this.props.MatchDetails.Match_ID === user.Match_ID) {
+                usersRequestToJoin: this.props.rootStore.GroupsStore.UsersInGroups !== undefined &&
+                    this.props.rootStore.GroupsStore.UsersInGroups.length !== 0 ? this.props.rootStore.GroupsStore.UsersInGroups.map(user => {
+                        if (!user.Accepted && this.props.GroupDetails.Group_ID === user.Group_ID) {
                             let userDetails = this.props.rootStore.UserStore.users.filter(u => u.User_ID === user.User_ID)[0]
                             let picture = userDetails.ProfilePIC === null || userDetails.ProfilePIC === undefined ? ""
                                 : (userDetails.ProfilePIC.slice(0, 8) !== "https://" ?
@@ -93,13 +81,13 @@ class MatchModal extends React.Component {
 
                             console.log("kkkkkkkkkkkkkkkkkkk  " + userDetails.User_ID)
                             return (
-                                <UsersInMatchComponent key={user.UserInMatch_ID} userDetails={userDetails} MatchDetails={this.props.MatchDetails} MatchAdmin={this.props.MatchDetails.Admin_ID} userPIC={picture} userInMatch={2} refreshUsers={this.props.refreshMatches} />
+                                <UsersInGroupComponent key={user.UserInGroup_ID} userDetails={userDetails} GroupDetails={this.props.GroupDetails} GroupAdmin={this.props.GroupDetails.Admin_ID} userPIC={picture} userInGroup={2} refreshUsers={this.props.refreshGroups} />
                             )
                         }
                     }) : [],
-                usersInvitedToMatchNotAccepted: this.props.rootStore.MatchStore.UsersInvitedToMatches !== undefined &&
-                    this.props.rootStore.MatchStore.UsersInvitedToMatches.length !== 0 ? this.props.rootStore.MatchStore.UsersInvitedToMatches.map(user => {
-                        if (!user.Accepted && this.props.MatchDetails.Match_ID === user.Match_ID) {
+                usersInvitedToGroupNotAccepted: this.props.rootStore.GroupsStore.UsersInvitedToGroups !== undefined &&
+                    this.props.rootStore.GroupsStore.UsersInvitedToGroups.length !== 0 ? this.props.rootStore.GroupsStore.UsersInvitedToGroups.map(user => {
+                        if (!user.Accepted && this.props.GroupDetails.Group_ID === user.Group_ID) {
                             let userDetails = this.props.rootStore.UserStore.users.filter(u => u.User_ID === user.User_ID)[0]
                             let picture = userDetails.ProfilePIC === null || userDetails.ProfilePIC === undefined ? ""
                                 : (userDetails.ProfilePIC.slice(0, 8) !== "https://" ?
@@ -108,7 +96,7 @@ class MatchModal extends React.Component {
 
                             console.log("kkkkkkkkkkkkkkkkkkk  " + userDetails.User_ID)
                             return (
-                                <UsersInMatchComponent key={user.UserInvitedToMatch_ID} userDetails={userDetails} MatchDetails={this.props.MatchDetails} MatchAdmin={this.props.MatchDetails.Admin_ID} userPIC={picture} userInMatch={3} refreshUsers={this.props.refreshMatches} />
+                                <UsersInGroupComponent key={user.UserInvitedToGroup_ID} userDetails={userDetails} GroupDetails={this.props.GroupDetails} GroupAdmin={this.props.GroupDetails.Admin_ID} userPIC={picture} userInGroup={3} refreshUsers={this.props.refreshGroups} />
                             )
                         }
                     }) : []
@@ -116,9 +104,9 @@ class MatchModal extends React.Component {
         }
         else {
             this.setState({
-                UsersInMatch: this.props.rootStore.MatchStore.UsersInMatches !== undefined &&
-                    this.props.rootStore.MatchStore.UsersInMatches.length !== 0 ? this.props.rootStore.MatchStore.UsersInMatches.map(user => {
-                        if (user.Accepted && this.props.MatchDetails.Match_ID === user.Match_ID) {
+                UsersInGroup: this.props.rootStore.GroupsStore.UsersInGroups !== undefined &&
+                    this.props.rootStore.GroupsStore.UsersInGroups.length !== 0 ? this.props.rootStore.GroupsStore.UsersInGroups.map(user => {
+                        if (user.Accepted && this.props.GroupDetails.Group_ID === user.Group_ID) {
                             let userDetails = this.props.rootStore.UserStore.users.filter(u => u.User_ID === user.User_ID)[0]
                             let picture = userDetails.ProfilePIC === null || userDetails.ProfilePIC === undefined ? ""
                                 : (userDetails.ProfilePIC.slice(0, 8) !== "https://" ?
@@ -127,13 +115,13 @@ class MatchModal extends React.Component {
 
                             console.log("kkkkkkkkkkkkkkkkkkk  " + userDetails.User_ID)
                             return (
-                                <UsersInMatchComponent key={user.UserInMatch_ID} MatchDetails={this.props.MatchDetails} userDetails={userDetails} MatchAdmin={this.props.MatchDetails.Admin_ID} userPIC={picture} userInMatch={0} refreshUsers={this.props.refreshMatches} />
+                                <UsersInGroupComponent key={user.UserInGroup_ID} GroupDetails={this.props.GroupDetails} userDetails={userDetails} GroupAdmin={this.props.GroupDetails.Admin_ID} userPIC={picture} userInGroup={0} refreshUsers={this.props.refreshGroups} />
                             )
                         }
                     }) : [],
-                UsersInvitedToMatch: this.props.rootStore.MatchStore.UsersInvitedToMatches !== undefined &&
-                    this.props.rootStore.MatchStore.UsersInvitedToMatches.length !== 0 ? this.props.rootStore.MatchStore.UsersInvitedToMatches.map(user => {
-                        if (user.Accepted && this.props.MatchDetails.Match_ID === user.Match_ID) {
+                UsersInvitedToGroup: this.props.rootStore.GroupsStore.UsersInvitedToGroups !== undefined &&
+                    this.props.rootStore.GroupsStore.UsersInvitedToGroups.length !== 0 ? this.props.rootStore.GroupsStore.UsersInvitedToGroups.map(user => {
+                        if (user.Accepted && this.props.GroupDetails.Group_ID === user.Group_ID) {
                             let userDetails = this.props.rootStore.UserStore.users.filter(u => u.User_ID === user.User_ID)[0]
                             let picture = userDetails.ProfilePIC === null || userDetails.ProfilePIC === undefined ? ""
                                 : (userDetails.ProfilePIC.slice(0, 8) !== "https://" ?
@@ -142,7 +130,7 @@ class MatchModal extends React.Component {
 
                             console.log("kkkkkkkkkkkkkkkkkkk  " + userDetails.User_ID)
                             return (
-                                <UsersInMatchComponent key={user.UserInvitedToMatch_ID} MatchDetails={this.props.MatchDetails} userDetails={userDetails} MatchAdmin={this.props.MatchDetails.Admin_ID} userPIC={picture} userInMatch={1} refreshUsers={this.props.refreshMatches} />
+                                <UsersInGroupComponent key={user.UserInvitedToGroup_ID} GroupDetails={this.props.GroupDetails} userDetails={userDetails} GroupAdmin={this.props.GroupDetails.Admin_ID} userPIC={picture} userInGroup={1} refreshUsers={this.props.refreshGroups} />
                             )
                         }
                     }) : []
@@ -152,7 +140,7 @@ class MatchModal extends React.Component {
     }
 
     refreshUsers = async () => {
-        console.log("matchModal - refreshing")
+        console.log("groupModal - refreshing")
         await this.clearUsers()
     }
 
@@ -181,25 +169,13 @@ class MatchModal extends React.Component {
                     <Content padder contentContainerStyle={{ flex: 1, justifyContent: 'space-evenly' }}>
                         <Item style={{ flex: 0.2, flexDirection: 'row', justifyContent: 'space-evenly', borderBottomColor: 'transparent' }}>
                             <Thumbnail
-                                source={this.props.MatchDetails.Match_Picture === null ? require('../assets/Sports-Vision.png') : { uri: `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${this.props.MatchDetails.Match_Picture}` }} />
+                                source={this.props.GroupDetails.Group_Picture === null ? require('../assets/Sports-Vision.png') : { uri: `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${this.props.GroupDetails.Group_Picture}` }} />
                             <Text style={{ fontSize: 30, fontWeight: 'bold', textAlign: 'center', color: 'rgb(204,204,204)' }}>
-                                {this.props.MatchDetails.Match_Name}
+                                {this.props.GroupDetails.Group_Name}
                             </Text>
                         </Item>
-                        <Item style={{ flex: 0.1, flexDirection: 'row', justifyContent: 'space-between', borderBottomColor: 'transparent' }}>
-                            <Label style={{ color: 'rgb(186, 40, 0)' }}>DATE</Label>
-                            <Text style={{ color: 'rgb(204,204,204)' }}>{this.props.Match_Date.toISOString().slice(0, 10)}</Text>
-                        </Item>
-                        <Item style={{ flex: 0.1, flexDirection: 'row', justifyContent: 'space-between', borderBottomColor: 'transparent' }}>
-                            <Label style={{ color: 'rgb(186, 40, 0)' }}>TIME</Label>
-                            <Text style={{ color: 'rgb(204,204,204)' }}>{this.props.MatchDetails.Match_Time.slice(0, 5)}</Text>
-                        </Item>
-                        <Item style={{ flex: 0.1, flexDirection: 'row', justifyContent: 'space-between', borderBottomColor: 'transparent' }}>
-                            <Label style={{ color: 'rgb(186, 40, 0)' }}>LOCATION</Label>
-                            <Text style={{ color: 'rgb(204,204,204)' }}>{this.props.rootStore.CitiesAndFieldsStore.Cities.filter(city => city.City_ID === this.props.MatchDetails.City_ID)[0].City_Name} - {this.props.rootStore.CitiesAndFieldsStore.Fields.filter(field => field.Field_ID === this.props.MatchDetails.Field_ID)[0].Field_Name}</Text>
-                        </Item>
                         <Text style={{ textAlign: 'center', fontWeight: 'bold', color: 'rgb(186, 40, 0)' }}>PLAYERS</Text>
-                        {this.props.rootStore.UserStore.user.userID === this.props.MatchDetails.Admin_ID && <Button
+                        {this.props.rootStore.UserStore.user.userID === this.props.GroupDetails.Admin_ID && <Button
                             bordered
                             rounded
                             style={{ borderColor: 'rgb(186, 40, 0)', justifyContent: 'center' }}
@@ -207,11 +183,11 @@ class MatchModal extends React.Component {
                         >
                             <Text style={{ color: 'rgb(186, 40, 0)' }}>INVITE FRIENDS</Text>
                         </Button>}
-                        <FriendsInviteModal match_ID={this.props.MatchDetails.Match_ID} modalVisible={this.state.friendsInviteModalVisible} hideModal={this.friendsInviteHideModal} MatchDetails={this.props.MatchDetails} refreshMatches={this.props.refreshMatches}/>
+                        <FriendsInviteGroupModal Group_ID={this.props.GroupDetails.Group_ID} modalVisible={this.state.friendsInviteModalVisible} hideModal={this.friendsInviteHideModal} GroupDetails={this.props.GroupDetails} refreshGroups={this.props.refreshGroups}/>
                         <Content padder>
-                            {this.state.UsersInMatch}
-                            {this.state.UsersInvitedToMatch}
-                            {this.state.usersInvitedToMatchNotAccepted}
+                            {this.state.UsersInGroup}
+                            {this.state.UsersInvitedToGroup}
+                            {this.state.usersInvitedToGroupNotAccepted}
                             {this.state.usersRequestToJoin}
                         </Content>
                         {this.props.btn}
@@ -230,4 +206,4 @@ class MatchModal extends React.Component {
     }
 }
 
-export default inject('rootStore')(observer(MatchModal))
+export default inject('rootStore')(observer(GroupModal))

@@ -22,7 +22,7 @@ class CameraPage extends React.Component {
 
     }
 
-    async componentWillMount() {
+    async componentDidMount() {
         const { status } = await Permissions.askAsync(Permissions.CAMERA);
         this.setState({ hasCameraPermission: status === 'granted' });
     }
@@ -60,15 +60,58 @@ class CameraPage extends React.Component {
         }
     }
 
-    confirm = () => {
+    confirm = async() => {
         if (this.props.rootStore.CameraStore.signUpOrCreateMatch === 0) {
-            this.props.rootStore.CameraStore.changeRegisterPhotoURI(this.state.photoUri)
+            await this.props.rootStore.CameraStore.changeRegisterPhotoURI(this.state.photoUri)
             this.props.navigation.navigate('SignUpPage')
         }
-        else {
-            this.props.rootStore.CameraStore.changeCreateMatchPhotoURI(this.state.photoUri)
+        else if (this.props.rootStore.CameraStore.signUpOrCreateMatch === 1) {
+            await this.props.rootStore.CameraStore.changeCreateMatchPhotoURI(this.state.photoUri)
             this.props.navigation.navigate('CreateMatchPage')
         }
+        else if (this.props.rootStore.CameraStore.signUpOrCreateMatch === 2) {
+            await this.props.rootStore.CameraStore.changeUserPhotoURI(this.state.photoUri)
+            await this.imageUpload(this.state.photoUri, this.props.rootStore.UserStore.user.username + "_Picture.jpg", this.props.rootStore.UserStore.user.userID)
+            this.props.navigation.navigate("ProfilePage")
+        }
+        else {
+            await this.props.rootStore.CameraStore.changeCreateGroupPhotoURI(this.state.photoUri)
+            this.props.navigation.navigate('CreateGroupPage')
+        }
+    }
+
+    imageUpload = async (imgUri, picName, userID) => {
+        let urlAPI = "http://ruppinmobile.tempdomain.co.il/site09/uploadpicture";
+        let dataI = new FormData();
+        dataI.append('picture', {
+            uri: imgUri,
+            name: picName,
+            type: 'image/jpg',
+        });
+        dataI.append('userID', userID)
+        console.log(dataI)
+        const config = {
+            method: 'POST',
+            body: dataI,
+        };
+
+        console.log(config.body)
+
+        await fetch(urlAPI, config)
+            .then((responseData) => {
+                //console.log(responseData)
+                if (responseData.status === 201) {
+                    this.props.rootStore.UserStore.getNewUserDetails()
+                    this.props.rootStore.CameraStore.changeSignUpOrCreateMatch(undefined)
+                }
+                else {
+                    alert('error uploding ...');
+                }
+                
+            })
+            .catch(err => {
+                alert('err upload= ' + err);
+            });
     }
 
     render() {

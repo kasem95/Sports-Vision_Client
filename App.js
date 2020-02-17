@@ -13,6 +13,8 @@ import MatchesPage from './Pages/MatchesPage'
 import FriendsPage from './Pages/FriendsPage'
 import UsersToAddFriendPage from './Pages/UsersToAddFriendPage'
 import CreateMatchPage from './Pages/CreateMatchPage'
+import CreateGroupPage from './Pages/CreateGroupPage'
+import GroupsPage from './Pages/GroupsPage'
 import { Provider } from 'mobx-react';
 import Store from './Store/Store'
 import { AppLoading } from 'expo';
@@ -20,8 +22,6 @@ import { Container, StyleProvider, Root } from 'native-base';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import AuthLoadingScreen from './Components/AuthLoadingScreen'
-import getTheme from './native-base-theme/components';
-import material from './native-base-theme/variables/material'
 
 I18nManager.allowRTL(false)
 I18nManager.forceRTL(false)
@@ -69,9 +69,11 @@ const AppNavigator = createStackNavigator(
     MainPage,
     ProfilePage,
     MatchesPage,
+    GroupsPage,
     FriendsPage,
     UsersToAddFriendPage,
     CreateMatchPage,
+    CreateGroupPage,
     CameraPage,
   },
   {
@@ -92,6 +94,17 @@ const AuthStack = createStackNavigator(
     LoginPage,
     SignUpPage,
     CameraPage,
+  },
+  {
+    defaultNavigationOptions: {
+      headerStyle: {
+        backgroundColor: 'rgb(186, 40, 0)',
+      },
+      headerTitleStyle: {
+        color: 'rgb(48,48,48)'
+      }
+
+    }
   }
 );
 

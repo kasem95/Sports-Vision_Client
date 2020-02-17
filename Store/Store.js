@@ -4,6 +4,7 @@ import FriendsStore from './FriendsStore';
 import UsersToAddFriendStore from './UsersToAddFriendStore'
 import CameraStore from './CameraStore'
 import CitiesAndFieldsStore from './CitiesAndFieldsStore'
+import GroupsStore from './GroupsStore'
 
 const Store = {
     UserStore:UserStore,
@@ -11,7 +12,8 @@ const Store = {
     FriendsStore:FriendsStore,
     UsersToAddFriendStore:UsersToAddFriendStore,
     CameraStore:CameraStore,
-    CitiesAndFieldsStore:CitiesAndFieldsStore
+    CitiesAndFieldsStore:CitiesAndFieldsStore,
+    GroupsStore:GroupsStore
 }
 
 export default Store;

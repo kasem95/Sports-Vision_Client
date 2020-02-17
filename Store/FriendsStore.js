@@ -20,7 +20,7 @@ class FriendsStore extends React.Component {
             })
         })
             .then(res => {
-                console.log("res=", res);
+                //console.log("res=", res);
                 return res.json();
             })
             .then(
@@ -30,6 +30,8 @@ class FriendsStore extends React.Component {
 
                         this.friendsList = result;
 
+                    }else{
+                        this.friendsList = []
                     }
                 },
                 error => {
@@ -47,7 +49,7 @@ class FriendsStore extends React.Component {
             })
         })
             .then(res => {
-                console.log("res=", res);
+                //console.log("res=", res);
                 return res.json();
             })
             .then(
@@ -57,6 +59,8 @@ class FriendsStore extends React.Component {
 
                         this.FriendsRespondsList = result;
 
+                    }else{
+                        this.FriendsRespondsList = []
                     }
                 },
                 error => {
@@ -74,7 +78,7 @@ class FriendsStore extends React.Component {
             })
         })
             .then(res => {
-                console.log("res=", res);
+                //console.log("res=", res);
                 return res.json();
             })
             .then(
@@ -84,6 +88,9 @@ class FriendsStore extends React.Component {
 
                         this.FriendsRequestsList = result;
 
+                    }
+                    else{
+                        this.FriendsRequestsList = []
                     }
                 },
                 error => {
@@ -101,7 +108,7 @@ class FriendsStore extends React.Component {
             })
         })
             .then(res => {
-                console.log("res=", res);
+                //console.log("res=", res);
                 return res.json();
             })
             .then(
@@ -111,6 +118,8 @@ class FriendsStore extends React.Component {
 
                         this.friendsTable = result;
 
+                    }else{
+                        this.friendsTable = []
                     }
                 },
                 error => {

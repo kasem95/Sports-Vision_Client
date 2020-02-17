@@ -4,7 +4,9 @@ configure({ enforceActions: 'observed' });
 class CameraStore {
     RegisterPhotoURI = ""
     CreateMatchPhotoURI = ""
-    signUpOrCreateMatch = 0
+    UserNewPicture = ""
+    signUpOrCreateMatch = undefined
+    CreateGroupPhotoURI = ""
 
     changeSignUpOrCreateMatch = (val) => {
         this.signUpOrCreateMatch = val
@@ -14,8 +16,16 @@ class CameraStore {
         this.RegisterPhotoURI = val
     }
 
+    changeUserPhotoURI = val => {
+        this.UserNewPicture = val
+    }
+
     changeCreateMatchPhotoURI = val => {
         this.CreateMatchPhotoURI = val
+    }
+
+    changeCreateGroupPhotoURI = val => {
+        this.CreateGroupPhotoURI = val
     }
 }
 
@@ -25,7 +35,11 @@ decorate(CameraStore, {
     changeRegisterPhotoURI: action,
     changeCreateMatchPhotoURI: action,
     signUpOrCreateMatch: observable,
-    changeSignUpOrCreateMatch: action
+    changeSignUpOrCreateMatch: action,
+    UserNewPicture: observable,
+    changeUserPhotoURI: action,
+    CreateGroupPhotoURI: observable,
+    changeCreateGroupPhotoURI: action
 })
 
 export default new CameraStore()

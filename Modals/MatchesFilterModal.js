@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Dimensions, Platform, TouchableHighlightBase, TouchableNativeFeedbackBase } from 'react-native'
-import { Text, Content, Button, Container, Item, DatePicker, Picker, Label, CheckBox } from 'native-base'
+import { Text, Content, Button, Container, Item, Picker, Label, CheckBox, Toast, Left, Right } from 'native-base'
 import { observer, inject } from 'mobx-react';
 import Modal from "react-native-modal";
-import DateTimePicker from "react-native-modal-datetime-picker";
+import DateTimePicker from '@react-native-community/datetimepicker';
 //import ExtraDimensions from 'react-native-extra-dimensions-android';
 
 
@@ -14,18 +14,18 @@ const height = Dimensions.get('window').height
 : ExtraDimensions.getRealWindowHeight();*/
 
 class MatchesFilterModal extends Component {
+    _isMounted = false;
     constructor(props) {
         super(props);
-        let now = new Date()
 
         this.state = {
             cities: [],
             fields: [],
             date: new Date(),
-            dateChosen: '',
+            dateChosen: undefined,
             dateCheckBox: false,
-            time: `${(now.getHours() < 10 ? '0' + now.getHours() : now.getHours())}:${(now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes())}`,
-            timeChosen: '',
+            time: new Date(),
+            timeChosen: undefined,
             timeCheckBox: false,
             city: 1,
             cityChosen: undefined,
@@ -33,61 +33,88 @@ class MatchesFilterModal extends Component {
             field: 1,
             fieldChosen: undefined,
             fieldCheckBox: false,
-            isDateTimePickerVisible: false
+            isDateTimePickerVisible: false,
+            isDateTimePickerVisibleForDate: false
         }
     }
 
     componentDidMount() {
-        let cities = this.props.rootStore.CitiesAndFieldsStore.Cities;
-        let fields = this.props.rootStore.CitiesAndFieldsStore.Fields;
-        console.log(this.props.rootStore.CitiesAndFieldsStore.Cities)
-        this.setState({
-            cities: cities.map(city => {
-                return <Picker.Item key={city.City_ID} label={city.City_Name} value={city.City_ID} />
-            }),
-            fields: fields.filter(f => this.state.citySelected === f.City_ID).map(field => {
-                return <Picker.Item key={field.Field_ID} label={field.Field_Name} value={field.Field_ID} />
-            }),
-            dateCheckBox: false,
+        this._isMounted = true
+        if (this._isMounted) {
+            let cities = this.props.rootStore.CitiesAndFieldsStore.Cities;
+            let fields = this.props.rootStore.CitiesAndFieldsStore.Fields;
+            console.log(this.props.rootStore.CitiesAndFieldsStore.Cities)
+            this.setState({
+                cities: cities.map((city, key) => {
+                    return <Picker.Item key={key} label={city.City_Name} value={city.City_ID} />
+                }),
+                fields: fields.filter(f => this.state.city === f.City_ID).map((field, key) => {
+                    return <Picker.Item key={key} label={field.Field_Name} value={field.Field_ID} />
+                }),
 
-        })
+            })
+        }
     }
 
-    dateChange = (val) => {
+    componentWillUnmount() {
+        this._isMounted = false
+    }
+
+    dateChange = (event, val) => {
         this.setState({
             date: val,
-            dateChosen: this.state.dateCheckBox ? val : ''
+            dateChosen: this.state.dateCheckBox ? val : undefined,
+            isDateTimePickerVisibleForDate: false
         }, () => console.log("dateChosen while changing = " + this.state.dateChosen.toString()))
     }
 
-    timeChange = val => {
-        this.setState({
-            time: `${(val.getHours() < 10 ? '0' + val.getHours() : val.getHours())}:${(val.getMinutes() < 10 ? '0' + val.getMinutes() : val.getMinutes())}`
-        }, this.hideDateTimePicker())
+    timeChange = (event, val) => {
+        console.log("time type = " + val)
+        if (val !== "" && val !== undefined) {
+            let now = new Date()
+            if ((val.getHours() < now.getHours() || (val.getHours() === now.getHours() && val.getMinutes() < now.getMinutes())) &&
+                this.state.date.getFullYear() === now.getFullYear() && this.state.date.getMonth() === now.getMonth() &&
+                this.state.date.getDate() === now.getDate()) {
+                this.setState({ isDateTimePickerVisible: false }, () =>
+                    Toast.show({ text: 'the time you chose has passed', buttonText: 'Okay', type: "danger" })
+                )
+
+            }
+            else {
+                this.setState({
+                    time: val,
+                    timeChosen: this.state.timeCheckBox ? ((val.getHours() < 10 && '0' + val.getHours()) || (val.getHours()))
+                        + ':' + ((val.getMinutes() < 10 && '0' + val.getMinutes()) || (val.getMinutes())) : undefined,
+                    isDateTimePickerVisible: false//`${(val.getHours() < 10 ? '0' + val.getHours() : val.getHours())}:${(val.getMinutes() < 10 ? '0' + val.getMinutes() : val.getMinutes())}`
+                }, () => {
+                    console.log(this.state.time)
+                })
+            }
+        } else {
+            this.setState({
+                isDateTimePickerVisible: false
+            })
+        }
     }
-
-    showDateTimePicker = () => {
-        this.setState({ isDateTimePickerVisible: true });
-    };
-
-    hideDateTimePicker = () => {
-        this.setState({ isDateTimePickerVisible: false });
-    };
 
     onCityChange = (val, pos) => {
         let fields = this.props.rootStore.CitiesAndFieldsStore.Fields;
-        console.log(val)
+        console.log("cityChosen = " + val)
         this.setState({
             city: val,
             fields: fields.filter(f => val === f.City_ID).map(field => {
                 return <Picker.Item key={field.Field_ID} label={field.Field_Name} value={field.Field_ID} />
-            })
-        })
+            }),
+            cityChosen: this.state.cityCheckBox ? val : undefined,
+            field: fields.filter(f => val === f.City_ID)[0].Field_ID,
+            fieldChosen: this.state.fieldCheckBox ? fields.filter(f => val === f.City_ID)[0].Field_ID : undefined
+        }, () => console.log("fieldchosen when change city = " + this.state.fieldChosen))
     }
 
     onFieldChange = (val, pos) => {
         this.setState({
-            field: val
+            field: val,
+            fieldChosen: this.state.fieldCheckBox ? val : undefined
         }, console.log(val))
     }
 
@@ -104,32 +131,36 @@ class MatchesFilterModal extends Component {
 
     onChangeDateCheckBox = () => {
         console.log("dateCheckBox = " + this.state.dateCheckBox)
-        this.setState({
-            dateChosen: this.state.dateCheckBox && this.state.date || '',
-            dateCheckBox: !this.state.dateCheckBox
-        }
-        , console.log("dateCheckBox = " + this.state.dateCheckBox + " dateChosen = " + this.state.dateChosen))
+        this.setState(prevState => ({
+            dateCheckBox: !prevState.dateCheckBox,
+            dateChosen: !prevState.dateCheckBox && this.state.date || undefined,
+        })
+            , () => console.log("dateCheckBox = " + this.state.dateCheckBox + " dateChosen = " + this.state.dateChosen))
     }
 
     onChangeTimeCheckBox = () => {
         this.setState(prevState => ({
             timeCheckBox: !prevState.timeCheckBox,
-            timeChosen: this.state.timeCheckBox ? this.state.time : ''
-        }))
+            timeChosen: !prevState.timeCheckBox ? ((this.state.time.getHours() < 10 && '0' + this.state.time.getHours()) || (this.state.time.getHours()))
+                + ':' + ((this.state.time.getMinutes() < 10 && '0' + this.state.time.getMinutes()) || (this.state.time.getMinutes())) : undefined
+        })
+            , () => console.log("timeCheckBox = " + this.state.timeCheckBox + " timeChosen = " + this.state.timeChosen))
     }
 
     onChangeCityCheckBox = () => {
         this.setState(prevState => ({
             cityCheckBox: !prevState.cityCheckBox,
-            cityChosen: prevState.cityCheckBox ? this.state.city : undefined
-        }))
+            cityChosen: !prevState.cityCheckBox ? this.state.city : undefined
+        })
+            , () => console.log("cityCheckBox = " + this.state.cityCheckBox + " cityChosen = " + this.state.cityChosen))
     }
 
     onChangeFieldCheckBox = () => {
         this.setState(prevState => ({
             fieldCheckBox: !prevState.fieldCheckBox,
-            fieldChosen: prevState.fieldCheckBox ? this.state.field : undefined
-        }))
+            fieldChosen: !prevState.fieldCheckBox ? this.state.field : undefined
+        })
+            , () => console.log("fieldCheckBox = " + this.state.fieldCheckBox + " fieldChosen = " + this.state.fieldChosen))
     }
 
     render() {
@@ -139,7 +170,7 @@ class MatchesFilterModal extends Component {
                 deviceHeight={height}
                 deviceWidth={width}
             >
-                <Container style={{ /*width: width - 50,*/ alignSelf: 'center', backgroundColor: 'rgb(48,48,48)' }}>
+                <Container style={{ backgroundColor: 'rgb(48,48,48)' }}>
                     <Content padder contentContainerStyle={{ flex: 1, justifyContent: 'space-evenly' }}>
                         <Item style={{ flex: 0.1, flexDirection: 'row', justifyContent: 'space-between', borderBottomColor: 'transparent' }}>
                             <Text style={{ fontSize: 30, fontWeight: 'bold', textAlign: 'center', color: 'rgb(204,204,204)' }}>
@@ -147,69 +178,75 @@ class MatchesFilterModal extends Component {
                             </Text>
                         </Item>
 
-                        <Item style={{ borderBottomColor: 'transparent' }}>
+                        <Item style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                             <CheckBox checked={this.state.dateCheckBox} onPress={this.onChangeDateCheckBox} />
-                            <Label style={{ color: 'rgb(186, 40, 0)' }}>Match date</Label>
-                            <DatePicker
+                            <Button bordered small style={{ justifyContent: 'center', borderColor: 'rgb(186, 40, 0)' }} onPress={() => this.setState({ isDateTimePickerVisibleForDate: true })}>
+                                <Text style={{ color: 'rgb(186, 40, 0))' }}>CHOOSE DATE</Text>
+                            </Button>
+                            {this.state.isDateTimePickerVisibleForDate && <DateTimePicker
                                 minimumDate={new Date(Date())}
-                                onDateChange={this.dateChange}
-                                textStyle={{ color: 'rgb(204,204,204)' }}
-                                placeHolderTextStyle={{ color: 'rgb(204,204,204)' }}
-                            />
+                                onChange={this.dateChange}
+                                value={this.state.date}
+                            />}
+                            <Text style={{ color: 'rgb(204,204,204)' }}>{this.state.date.getDate() + '-' + (this.state.date.getMonth() + 1) + '-' + this.state.date.getFullYear()}</Text>
                         </Item>
-                        <Item style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
+                        <Item style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                             <CheckBox checked={this.state.timeCheckBox} onPress={this.onChangeTimeCheckBox} />
-                            <Label style={{ color: 'rgb(186, 40, 0)' }}>Match time</Label>
-                            <Button bordered small style={{ justifyContent: 'center', borderColor: 'rgb(186, 40, 0)' }} onPress={this.showDateTimePicker}>
+                            <Button bordered small style={{ justifyContent: 'center', borderColor: 'rgb(186, 40, 0)' }} onPress={() => this.setState({ isDateTimePickerVisible: true })}>
                                 <Text style={{ color: 'rgb(186, 40, 0))' }}>CHOOSE TIME</Text>
                             </Button>
-                            <DateTimePicker mode='time' isVisible={this.state.isDateTimePickerVisible} onCancel={this.hideDateTimePicker} onConfirm={this.timeChange} />
-                            <Text style={{ color: 'rgb(204,204,204)' }}>{this.state.timePicked}</Text>
+                            {this.state.isDateTimePickerVisible && <DateTimePicker value={this.state.time} is24Hour={true} mode='time' onChange={this.timeChange} />}
+                            <Text style={{ color: 'rgb(204,204,204)' }}>{((this.state.time.getHours() < 10 && '0' + this.state.time.getHours()) || (this.state.time.getHours()))
+                                + ':' + ((this.state.time.getMinutes() < 10 && '0' + this.state.time.getMinutes()) || (this.state.time.getMinutes()))}</Text>
                         </Item>
-                        <Item>
+                        <Item style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                             <CheckBox checked={this.state.cityCheckBox} onPress={this.onChangeCityCheckBox} />
                             <Label style={{ color: 'rgb(186, 40, 0)' }}>City</Label>
-                            <Picker
-                                mode='dropdown'
-                                placeholder="Select city"
-                                selectedValue={this.state.city}
-                                onValueChange={this.onCityChange}
-                                style={{ color: 'rgb(204,204,204)' }}
-                            >
-                                {this.state.cities}
-                            </Picker>
+                            <Right style={{ flex: 0.8, flexDirection: 'row', justifyContent: 'center' }}>
+                                <Picker
+                                    mode='dropdown'
+                                    placeholder="Select city"
+                                    selectedValue={this.state.city}
+                                    onValueChange={this.onCityChange}
+                                    style={{ color: 'rgb(204,204,204)' }}
+                                >
+                                    {this.state.cities}
+                                </Picker>
+                            </Right>
                         </Item>
-                        <Item>
+                        <Item style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                             <CheckBox checked={this.state.fieldCheckBox} onPress={this.onChangeFieldCheckBox} />
                             <Label style={{ color: 'rgb(186, 40, 0)' }}>Field</Label>
-                            <Picker
-                                mode='dropdown'
-                                placeholder="Select city"
-                                selectedValue={this.state.field}
-                                onValueChange={this.onFieldChange}
-                                style={{ color: 'rgb(204,204,204)' }}
-                            >
-                                {this.state.fields}
-                            </Picker>
+                            <Right style={{ flex: 0.8, flexDirection: 'row', justifyContent: 'center' }}>
+                                <Picker
+                                    mode='dropdown'
+                                    placeholder="Select field"
+                                    selectedValue={this.state.field}
+                                    onValueChange={this.onFieldChange}
+                                    style={{ color: 'rgb(204,204,204)' }}
+                                >
+                                    {this.state.fields}
+                                </Picker>
+                            </Right>
                         </Item>
                         <Item style={{ flex: 0.2, flexDirection: 'row', justifyContent: 'space-between', borderBottomColor: 'transparent' }}>
                             <Button
                                 style={{ backgroundColor: 'rgb(186, 40, 0)' }}
                                 onPress={() => this.props.hideModal()}
                             >
-                                <Text>CANCEL</Text>
+                                <Text style={{ color: 'rgb(48,48,48)' }}>CANCEL</Text>
                             </Button>
                             <Button
                                 style={{ backgroundColor: 'rgb(186, 40, 0)' }}
                                 onPress={this.onConfirm}
                             >
-                                <Text>CONFIRM</Text>
+                                <Text style={{ color: 'rgb(48,48,48)' }}>CONFIRM</Text>
                             </Button>
                             <Button
                                 style={{ backgroundColor: 'rgb(186, 40, 0)' }}
                                 onPress={() => this.props.clearFilter()}
                             >
-                                <Text>CLEAR</Text>
+                                <Text style={{ color: 'rgb(48,48,48)' }}>CLEAR</Text>
                             </Button>
                         </Item>
                     </Content>

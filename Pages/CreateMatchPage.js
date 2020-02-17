@@ -1,11 +1,12 @@
 import React from 'react'
 import { inject, observer } from 'mobx-react'
-import { Content, Thumbnail, Form, Input, Item, Container, Label, Picker, DatePicker, CheckBox, Text, Button, Toast, Right, Left } from 'native-base'
+import { Content, Thumbnail, Form, Input, Item, Container, Label, Picker, CheckBox, Text, Button, Toast, Right, Left } from 'native-base'
 import { KeyboardAvoidingView, TouchableOpacity, ScrollView, Image } from 'react-native'
 import { Header } from 'react-navigation-stack'
-import DateTimePicker from "react-native-modal-datetime-picker";
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 class CreateMatchPage extends React.Component {
+    _isMounted = false;
     constructor(props) {
         super(props);
         let now = new Date()
@@ -20,16 +21,19 @@ class CreateMatchPage extends React.Component {
             fieldSelectedInvalid: false,
             datePicked: new Date(),
             datePickedInvalid: false,
-            timePicked: `${(now.getHours() < 10 ? '0' + now.getHours() : now.getHours())}:${(now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes())}`,
+            timePicked: new Date(), //`${(now.getHours() < 10 ? '0' + now.getHours() : now.getHours())}:${(now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes())}`,
             timePickedInvalid: false,
             playTime: 1,
             playTimeInvalid: false,
             keyCheckBox: false,
             key: null,
-            maxPlayers: 4,
+            maxPlayers: this.props.rootStore.MatchStore.createMatchWithGroup ?
+                this.props.rootStore.GroupsStore.groupDetailsForMatchCreating.Max_Players : 4,
             cities: [],
             fields: [],
-            isDateTimePickerVisible: false
+            isDateTimePickerVisible: false,
+            isDateTimePickerVisibleForDate: false,
+            numOfPlayers: []
         }
     }
 
@@ -41,19 +45,30 @@ class CreateMatchPage extends React.Component {
         };
     };
 
-    componentDidMount() {
+    async componentDidMount() {
+        this._isMounted = true
         this.props.navigation.setParams({ profilePage: this.profilePage, imageurl: this.props.rootStore.UserStore.user.imageURL, faceORG: this.props.rootStore.UserStore.faceORGLogin })
         let cities = this.props.rootStore.CitiesAndFieldsStore.Cities;
         let fields = this.props.rootStore.CitiesAndFieldsStore.Fields;
+        let numOfPlayers = []
+        for (let i = this.props.rootStore.GroupsStore.groupDetailsForMatchCreating.Max_Players; i <= 10; i++) {
+            numOfPlayers.push(<Picker.Item key={i} label={i.toString()} value={i} />)
+        }
         console.log(this.props.rootStore.CitiesAndFieldsStore.Cities)
-        this.setState({
-            cities: cities.map(city => {
-                return <Picker.Item key={city.City_ID} label={city.City_Name} value={city.City_ID} />
-            }),
-            fields: fields.filter(f => this.state.citySelected === f.City_ID).map(field => {
-                return <Picker.Item key={field.Field_ID} label={field.Field_Name} value={field.Field_ID} />
+        if (this._isMounted) {
+            this.setState({
+                cities: cities.map(city => {
+                    return <Picker.Item key={city.City_ID} label={city.City_Name} value={city.City_ID} />
+                }),
+                fields: fields.filter(f => this.state.citySelected === f.City_ID).map(field => {
+                    return <Picker.Item key={field.Field_ID} label={field.Field_Name} value={field.Field_ID} />
+                }),
+                numOfPlayers: numOfPlayers
             })
-        })
+        }
+    }
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 
     profilePage = () => {
@@ -83,31 +98,43 @@ class CreateMatchPage extends React.Component {
         }, console.log(val))
     }
 
-    dateChange = (val) => {
+    dateChange = (event, val) => {
         this.setState({
-            datePicked: val
+            datePicked: val,
+            isDateTimePickerVisibleForDate: false
         }, () => console.log(this.state.datePicked.toString()))
     }
 
-    timeChange = val => {
-        let now = new Date()
-        if ((val.getHours() < now.getHours() || (val.getHours() === now.getHours() && val.getMinutes() < now.getMinutes())) &&
-            this.state.datePicked.getFullYear() === now.getFullYear() && this.state.datePicked.getMonth() === now.getMonth() &&
-            this.state.datePicked.getDate() === now.getDate()) {
-            this.hideDateTimePicker()
-            Toast.show({ text: 'the time you chose has passed', buttonText: 'Okay', type: "danger" })
-        }
-        else {
+    timeChange = (event, val) => {
+        if (val !== "" && val !== undefined) {
+            let now = new Date()
+            if ((val.getHours() < now.getHours() || (val.getHours() === now.getHours() && val.getMinutes() < now.getMinutes())) &&
+                this.state.datePicked.getFullYear() === now.getFullYear() && this.state.datePicked.getMonth() === now.getMonth() &&
+                this.state.datePicked.getDate() === now.getDate()) {
+                this.setState({ isDateTimePickerVisible: false }, () =>
+                    Toast.show({ text: 'the time you chose has passed', buttonText: 'Okay', type: "danger" })
+                )
+
+            }
+            else {
+                this.setState({
+                    timePicked: val,
+                    isDateTimePickerVisible: false//`${(val.getHours() < 10 ? '0' + val.getHours() : val.getHours())}:${(val.getMinutes() < 10 ? '0' + val.getMinutes() : val.getMinutes())}`
+                }, () => {
+                    console.log(this.state.timePicked)
+                })
+            }
+        } else {
             this.setState({
-                timePicked: `${(val.getHours() < 10 ? '0' + val.getHours() : val.getHours())}:${(val.getMinutes() < 10 ? '0' + val.getMinutes() : val.getMinutes())}`
-            }, this.hideDateTimePicker())
+                isDateTimePickerVisible: false
+            })
         }
     }
 
     onChangeKeyCheckBox = () => {
         this.setState(prevState => ({
             keyCheckBox: !prevState.keyCheckBox
-        }),console.log("keycheckbox = " + this.state.keyCheckBox))
+        }), console.log("keycheckbox = " + this.state.keyCheckBox))
     }
 
     onMaxPlayersChange = (val) => {
@@ -131,63 +158,120 @@ class CreateMatchPage extends React.Component {
         this.state.playTime === undefined ? this.setState({ playTimeInvalid: true }, () => Toast.show({ text: 'Enter match duration!', buttonText: 'Okay', type: "danger" })) : this.setState({ playTimeInvalid: false })
 
         console.log(this.state.playTime)
+        if (!this.props.rootStore.MatchStore.createMatchWithGroup) {
+            let match = {
+                UserID: this.props.rootStore.UserStore.user.userID,
+                MatchName: this.state.matchTitle,
+                CityID: this.state.citySelected,
+                FieldID: this.state.fieldSelected,
+                MatchDate: this.state.datePicked.getMonth() + 1
+                    + '-' + this.state.datePicked.getDate() + '-' +
+                    this.state.datePicked.getFullYear(),
+                MatchTime: this.state.timePicked.getHours() + ':' + this.state.timePicked.getMinutes(),
+                IsPrivate: this.state.keyCheckBox,
+                MatchKey: this.state.key,
+                MaxPlayers: this.state.maxPlayers,
+                PlayTime: this.state.playTime
+            }
 
-        let user = {
-            UserID: this.props.rootStore.UserStore.user.userID,
-            MatchName: this.state.matchTitle,
-            CityID: this.state.citySelected,
-            FieldID: this.state.fieldSelected,
-            MatchDate: this.state.datePicked.getMonth() + 1
-                + '-' + this.state.datePicked.getDate() + '-' +
-                this.state.datePicked.getFullYear(),
-            MatchTime: this.state.timePicked,
-            IsPrivate: this.state.keyCheckBox,
-            MatchKey: this.state.key,
-            MaxPlayers: this.state.maxPlayers,
-            PlayTime: this.state.playTime
-        }
+            console.log(JSON.stringify(match))
 
-        console.log(JSON.stringify(user))
-
-        this.state.matchTitle !== undefined && this.state.citySelected !== undefined && this.state.fieldSelected !== undefined
-            && this.state.datePicked !== undefined && this.state.timePicked !== undefined && this.state.timePicked !== undefined ?
-            await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Matches/Matchs`, {
-                method: "POST",
-                body: JSON.stringify(user),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            })
-                .then(res => {
-                    console.log("res=", res);
-                    return res.json();
-                })
-                .then(
-                    async result => {
-                        console.log("fetch GET= ", result);
-                        (typeof result === 'string') ? Toast.show({ text: result, buttonText: 'Okay', type: "danger" }) :
-                            this.setState({
-                                matchID: result
-                            },
-                                await this.props.rootStore.MatchStore.getUsersInMatches(),
-                                await this.props.rootStore.MatchStore.getActiveMatches(),
-                                this.props.navigation.navigate("MatchesPage"),
-                                Toast.show({ text: result.message, buttonText: 'Okay', type: "success" })
-                            )
-
-                    },
-                    error => {
-                        console.log("=> err post=", error);
-                        Toast.show({ text: error, buttonText: 'Okay', type: "danger" })
+            this.state.matchTitle !== undefined && this.state.citySelected !== undefined && this.state.fieldSelected !== undefined
+                && this.state.datePicked !== undefined && this.state.timePicked !== undefined && this.state.timePicked !== undefined ?
+                await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Matches/Matchs`, {
+                    method: "POST",
+                    body: JSON.stringify(match),
+                    headers: {
+                        "Content-Type": "application/json"
                     }
-                ) : null
+                })
+                    .then(res => {
+                        //console.log("res=", res);
+                        return res.json();
+                    })
+                    .then(
+                        async result => {
+                            console.log("fetch GET= ", result);
+                            (typeof result === 'string') ? Toast.show({ text: result, buttonText: 'Okay', type: "danger" }) :
+                                this.setState({
+                                    matchID: result
+                                }, async () => {
+                                    if (this.props.rootStore.CameraStore.CreateMatchPhotoURI !== "" && this.state.matchID !== -1) {
+                                        console.log(this.props.rootStore.CameraStore.CreateMatchPhotoURI)
+                                        this.imageUpload(this.props.rootStore.CameraStore.CreateMatchPhotoURI, this.state.matchTitle + "_MatchPicture.jpg", this.state.matchID)
+                                        this.props.rootStore.CameraStore.changeCreateMatchPhotoURI("")
+                                    }
+                                    await this.props.rootStore.MatchStore.getUsersInMatches()
+                                    await this.props.rootStore.MatchStore.getActiveMatches()
+                                    Toast.show({ text: result.message, buttonText: 'Okay', type: "success" })
+                                    this.props.navigation.navigate("MatchesPage")
+                                })
 
+                        },
+                        error => {
+                            console.log("=> err post=", error);
+                            Toast.show({ text: error, buttonText: 'Okay', type: "danger" })
+                        }
+                    ) : null
+        } else {
+            console.log("usersInGroup = " + JSON.stringify(this.props.rootStore.GroupsStore.usersInGroupForMatchCreating))
+            let usersUnGroupIDs = this.props.rootStore.GroupsStore.usersInGroupForMatchCreating.map(user=>{return user.User_ID})
+            let match = {
+                UserID: this.props.rootStore.UserStore.user.userID,
+                MatchName: this.state.matchTitle,
+                CityID: this.state.citySelected,
+                FieldID: this.state.fieldSelected,
+                MatchDate: this.state.datePicked.getMonth() + 1
+                    + '-' + this.state.datePicked.getDate() + '-' +
+                    this.state.datePicked.getFullYear(),
+                MatchTime: this.state.timePicked.getHours() + ':' + this.state.timePicked.getMinutes(),
+                IsPrivate: this.state.keyCheckBox,
+                MatchKey: this.state.key,
+                MaxPlayers: this.state.maxPlayers,
+                PlayTime: this.state.playTime,
+                UsersInGroup: usersUnGroupIDs
+            }
 
-        if (this.props.rootStore.CameraStore.CreateMatchPhotoURI !== "" && this.state.matchID !== -1) {
-            console.log(this.props.rootStore.CameraStore.CreateMatchPhotoURI)
-            this.imageUpload(this.props.rootStore.CameraStore.CreateMatchPhotoURI, this.state.matchTitle + "_MatchPicture.jpg", this.state.matchID)
+            console.log(JSON.stringify(match))
+
+            this.state.matchTitle !== undefined && this.state.citySelected !== undefined && this.state.fieldSelected !== undefined
+                && this.state.datePicked !== undefined && this.state.timePicked !== undefined && this.state.timePicked !== undefined ?
+                await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Matches/CreateMatchWithGroup`, {
+                    method: "POST",
+                    body: JSON.stringify(match),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                    .then(res => {
+                        //console.log("res=", res);
+                        return res.json();
+                    })
+                    .then(
+                        async result => {
+                            console.log("fetch GET= ", result);
+                            (typeof result === 'string') ? Toast.show({ text: result, buttonText: 'Okay', type: "danger" }) :
+                                this.setState({
+                                    matchID: result
+                                }, async () => {
+                                    if (this.props.rootStore.CameraStore.CreateMatchPhotoURI !== "" && this.state.matchID !== -1) {
+                                        console.log(this.props.rootStore.CameraStore.CreateMatchPhotoURI)
+                                        this.imageUpload(this.props.rootStore.CameraStore.CreateMatchPhotoURI, this.state.matchTitle + "_MatchPicture.jpg", this.state.matchID)
+                                        this.props.rootStore.CameraStore.changeCreateMatchPhotoURI("")
+                                    }
+                                    await this.props.rootStore.MatchStore.getUsersInMatches()
+                                    await this.props.rootStore.MatchStore.getActiveMatches()
+                                    Toast.show({ text: result.message, buttonText: 'Okay', type: "success" })
+                                    this.props.navigation.navigate("GroupsPage")
+                                })
+
+                        },
+                        error => {
+                            console.log("=> err post=", error);
+                            Toast.show({ text: error, buttonText: 'Okay', type: "danger" })
+                        }
+                    ) : null
         }
-
     }
 
     imageUpload = async (imgUri, picName, matchID) => {
@@ -199,23 +283,21 @@ class CreateMatchPage extends React.Component {
             type: 'image/jpg',
         });
         dataI.append('matchID', matchID)
-        console.log(dataI)
+        //console.log(dataI)
         const config = {
             method: 'POST',
             body: dataI,
         };
 
-        console.log(config.body)
+        //console.log(config.body)
 
         await fetch(urlAPI, config)
             .then((responseData) => {
-                console.log(responseData)
-                if (responseData.status === 201) {
-                    alert('uploaded successfully!')
-                }
-                else {
+                //console.log(responseData)
+                if (responseData.status !== 201) {
                     alert('error uploding ...');
                 }
+                this.props.rootStore.CameraStore.changeSignUpOrCreateMatch(undefined)
             })
             .catch(err => {
                 alert('err upload= ' + err);
@@ -232,14 +314,6 @@ class CreateMatchPage extends React.Component {
             playTime: val
         }, () => console.log(this.state.playTime))
     }
-
-    showDateTimePicker = () => {
-        this.setState({ isDateTimePickerVisible: true });
-    };
-
-    hideDateTimePicker = () => {
-        this.setState({ isDateTimePickerVisible: false });
-    };
 
     render() {
         return (
@@ -280,22 +354,26 @@ class CreateMatchPage extends React.Component {
                                         {this.state.fields}
                                     </Picker>
                                 </Item>
-                                <Item error={this.state.datePickedInvalid} style={{ borderBottomColor: 'transparent' }}>
+                                <Item error={this.state.datePickedInvalid} style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <Label style={{ color: 'rgb(186, 40, 0)' }}>Match date</Label>
-                                    <DatePicker
+                                    <Button bordered small style={{ justifyContent: 'center', borderColor: 'rgb(186, 40, 0)' }} onPress={() => this.setState({ isDateTimePickerVisibleForDate: true })}>
+                                        <Text style={{ color: 'rgb(186, 40, 0))' }}>CHOOSE DATE</Text>
+                                    </Button>
+                                    {this.state.isDateTimePickerVisibleForDate && <DateTimePicker
                                         minimumDate={new Date(Date())}
-                                        onDateChange={this.dateChange}
-                                        textStyle={{ color: 'rgb(204,204,204)' }}
-                                        placeHolderTextStyle={{ color: 'rgb(204,204,204)' }}
-                                    />
+                                        onChange={this.dateChange}
+                                        value={this.state.datePicked}
+                                    />}
+                                    <Text style={{ color: 'rgb(204,204,204)' }}>{this.state.datePicked.getDate() + '-' + (this.state.datePicked.getMonth() + 1) + '-' + this.state.datePicked.getFullYear()}</Text>
                                 </Item>
-                                <Item error={this.state.timePickedInvalid} style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-evenly' }}>
+                                <Item error={this.state.timePickedInvalid} style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <Label style={{ color: 'rgb(186, 40, 0)' }}>Match time</Label>
-                                    <Button bordered small style={{ justifyContent: 'center', borderColor: 'rgb(186, 40, 0)' }} onPress={this.showDateTimePicker}>
+                                    <Button bordered small style={{ justifyContent: 'center', borderColor: 'rgb(186, 40, 0)' }} onPress={() => this.setState({ isDateTimePickerVisible: true })}>
                                         <Text style={{ color: 'rgb(186, 40, 0))' }}>CHOOSE TIME</Text>
                                     </Button>
-                                    <DateTimePicker mode='time' isVisible={this.state.isDateTimePickerVisible} onCancel={this.hideDateTimePicker} onConfirm={this.timeChange} />
-                                    <Text style={{ color: 'rgb(204,204,204)' }}>{this.state.timePicked}</Text>
+                                    {this.state.isDateTimePickerVisible && <DateTimePicker value={this.state.timePicked} is24Hour={true} mode='time' onChange={this.timeChange} />}
+                                    <Text style={{ color: 'rgb(204,204,204)' }}>{((this.state.timePicked.getHours() < 10 && '0' + this.state.timePicked.getHours()) || (this.state.timePicked.getHours()))
+                                        + ':' + ((this.state.timePicked.getMinutes() < 10 && '0' + this.state.timePicked.getMinutes()) || (this.state.timePicked.getMinutes()))}</Text>
                                 </Item>
                                 <Item error={this.state.playTimeInvalid}>
                                     <Label style={{ color: 'rgb(186, 40, 0)' }}>Duration</Label>
@@ -329,8 +407,8 @@ class CreateMatchPage extends React.Component {
                                 </Item>
                                 <Item style={{ borderBottomColor: 'transparent' }}>
                                     <Label style={{ color: 'rgb(186, 40, 0)' }}>Max players</Label>
-                                    <Picker mode="dropdown"
-                                        placeholder="Select city"
+                                    {!this.props.rootStore.MatchStore.createMatchWithGroup ? <Picker mode="dropdown"
+                                        placeholder="Maximum Players"
                                         selectedValue={this.state.maxPlayers}
                                         onValueChange={this.onMaxPlayersChange}
                                         style={{ color: 'rgb(204,204,204)' }}
@@ -342,7 +420,15 @@ class CreateMatchPage extends React.Component {
                                         <Picker.Item label="8" value={8} />
                                         <Picker.Item label="9" value={9} />
                                         <Picker.Item label="10" value={10} />
-                                    </Picker>
+                                    </Picker> :
+                                        <Picker mode="dropdown"
+                                            placeholder="Maximum Players"
+                                            selectedValue={this.state.maxPlayers}
+                                            onValueChange={this.onMaxPlayersChange}
+                                            style={{ color: 'rgb(204,204,204)' }}
+                                        >
+                                            {this.state.numOfPlayers}
+                                        </Picker>}
                                 </Item>
                                 <Button style={{ justifyContent: 'center', backgroundColor: 'rgb(186, 40, 0)' }} onPress={this.Submit}>
                                     <Text style={{ color: 'rgb(48,48,48)' }}>SUBMIT</Text>

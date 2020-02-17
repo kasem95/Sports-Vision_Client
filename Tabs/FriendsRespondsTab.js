@@ -24,16 +24,17 @@ class FriendsRespondsTab extends React.Component {
             userList: this.props.rootStore.FriendsStore.FriendsRespondsList !== undefined &&
             this.props.rootStore.FriendsStore.FriendsRespondsList.length !== 0 &&
              this.props.rootStore.FriendsStore.FriendsRespondsList.map(friend => {
-                let picture = friend.ProfilePIC === null ? ""
-                    : (friend.Google_ID === null && friend.Facebook_ID === null ?
-                        `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${friend.ProfilePIC}`
-                        : friend.ProfilePIC)
+                let picture = friend.ProfilePIC === null || friend.ProfilePIC === undefined ? ""
+                        : (friend.ProfilePIC.slice(0, 8) !== "https://" ?
+                            `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${friend.ProfilePIC}`
+                            : friend.ProfilePIC)
 
                 return (
                     <FriendComponent key={friend.User_ID}
                         IsFriends={1}
                         UserID={friend.User_ID}
                         Username={friend.Username}
+                        Email={friend.Email}
                         ProfilePIC={picture}
                         RemoveComponent={() => this.remove(friend.User_ID)} />
                 )
@@ -48,16 +49,17 @@ class FriendsRespondsTab extends React.Component {
         this.props.rootStore.FriendsStore.friendsList = list;
         this.setState({
             userList: list !== undefined && list.length !== 0 && list.map(friend => {
-                let picture = friend.ProfilePIC === null ? ""
-                    : (friend.Google_ID === null && friend.Facebook_ID === null ?
-                        `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${friend.ProfilePIC}`
-                        : friend.ProfilePIC)
+                let picture = friend.ProfilePIC === null || friend.ProfilePIC === undefined ? ""
+                        : (friend.ProfilePIC.slice(0, 8) !== "https://" ?
+                            `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${friend.ProfilePIC}`
+                            : friend.ProfilePIC)
 
                 return (
                     <FriendComponent key={friend.User_ID}
                         IsFriends={1}
                         UserID={friend.User_ID}
                         Username={friend.Username}
+                        Email={friend.Email}
                         ProfilePIC={picture}
                         RemoveComponent={() => this.remove(friend.User_ID)} />
                 )
@@ -76,16 +78,17 @@ class FriendsRespondsTab extends React.Component {
             userList: this.props.rootStore.FriendsStore.FriendsRespondsList !== undefined &&
             this.props.rootStore.FriendsStore.FriendsRespondsList.length !== 0 &&
              this.props.rootStore.FriendsStore.FriendsRespondsList.map(friend => {
-                let picture = friend.ProfilePIC === null ? ""
-                    : (friend.Google_ID === null && friend.Facebook_ID === null ?
-                        `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${friend.ProfilePIC}`
-                        : friend.ProfilePIC)
+                let picture = friend.ProfilePIC === null || friend.ProfilePIC === undefined ? ""
+                        : (friend.ProfilePIC.slice(0, 8) !== "https://" ?
+                            `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${friend.ProfilePIC}`
+                            : friend.ProfilePIC)
 
                 return (
                     <FriendComponent key={friend.User_ID}
                         IsFriends={1}
                         UserID={friend.User_ID}
                         Username={friend.Username}
+                        Email={friend.Email}
                         ProfilePIC={picture}
                         RemoveComponent={() => this.remove(friend.User_ID)} />
                 )

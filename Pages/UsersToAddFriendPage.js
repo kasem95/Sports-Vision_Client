@@ -32,8 +32,8 @@ class UsersToAddFriendPage extends React.Component {
         this.setState({
             userList: this.props.rootStore.UsersToAddFriendStore.usersList.map(user => {
 
-                let picture = user.ProfilePIC === null ? ""
-                    : (user.Google_ID === null && user.Facebook_ID === null ?
+                let picture = user.ProfilePIC === null || user.ProfilePIC === undefined ? ""
+                    : (user.ProfilePIC.slice(0, 8) !== "https://" ?
                         `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${user.ProfilePIC}`
                         : user.ProfilePIC)
 
@@ -42,6 +42,7 @@ class UsersToAddFriendPage extends React.Component {
                     <UserToAddFriend key={user.User_ID}
                         UserID={user.User_ID}
                         Username={user.Username}
+                        Email={user.Email}
                         ProfilePIC={picture}
                         RemoveComponent={() => this.removeComp(user.User_ID)} />
                 )
@@ -60,8 +61,8 @@ class UsersToAddFriendPage extends React.Component {
         this.props.rootStore.FriendsStore.getFriendsList(this.props.rootStore.UserStore.user.userID)
         this.setState({
             userList: list.map(user => {
-                let picture = user.ProfilePIC === null ? ""
-                    : (user.Google_ID === null && user.Facebook_ID === null ?
+                let picture = user.ProfilePIC === null || user.ProfilePIC === undefined ? ""
+                    : (user.ProfilePIC.slice(0, 8) !== "https://" ?
                         `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${user.ProfilePIC}`
                         : user.ProfilePIC)
 
@@ -69,6 +70,7 @@ class UsersToAddFriendPage extends React.Component {
                     <UserToAddFriend key={user.User_ID}
                         UserID={user.User_ID}
                         Username={user.Username}
+                        Email={user.Email}
                         ProfilePIC={picture}
                         RemoveComponent={() => this.removeComp(user.User_ID)} />
                 )
@@ -85,8 +87,8 @@ class UsersToAddFriendPage extends React.Component {
 
         this.setState(prevState => ({
             userList: this.props.rootStore.UsersToAddFriendStore.usersList.map(user => {
-                let picture = user.ProfilePIC === null ? ""
-                    : (user.Google_ID === null && user.Facebook_ID === null ?
+                let picture = user.ProfilePIC === null || user.ProfilePIC === undefined ? ""
+                    : (user.ProfilePIC.slice(0, 8) !== "https://" ?
                         `http://ruppinmobile.tempdomain.co.il/site09/uploadFiles/${user.ProfilePIC}`
                         : user.ProfilePIC)
 
@@ -94,6 +96,7 @@ class UsersToAddFriendPage extends React.Component {
                     <UserToAddFriend key={user.User_ID}
                         UserID={user.User_ID}
                         Username={user.Username}
+                        Email={user.Email}
                         ProfilePIC={picture}
                         RemoveComponent={() => this.removeComp(user.User_ID)} />
                 )

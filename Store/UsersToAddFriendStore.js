@@ -21,7 +21,7 @@ class UsersToAddFriendStore extends React.Component {
             })
         })
             .then(res => {
-                console.log("res=", res);
+                //console.log("res=", res);
                 return res.json();
             })
             .then(

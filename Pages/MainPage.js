@@ -14,6 +14,7 @@ class MainPage extends React.Component {
 
     constructor(props) {
         super(props);
+        props.navigation.setParams({ profilePage: this.profilePage, imageurl: this.props.rootStore.UserStore.user.imageURL, faceORG: this.props.rootStore.UserStore.faceORGLogin })
     }
 
     static navigationOptions = ({ navigation }) => {
@@ -26,7 +27,8 @@ class MainPage extends React.Component {
 
     async componentDidMount() {
         this.props.navigation.setParams({ profilePage: this.profilePage, imageurl: this.props.rootStore.UserStore.user.imageURL, faceORG: this.props.rootStore.UserStore.faceORGLogin })
-        console.log(this.props.rootStore.UserStore.user.imageURL)
+        console.log("user image = " + this.props.rootStore.UserStore.user.imageURL)
+        console.log("user faceorg = " + this.props.rootStore.UserStore.faceORGLogin)
         await this.props.rootStore.UserStore.getUsers()
     }
 
@@ -37,8 +39,8 @@ class MainPage extends React.Component {
     MatchesPage = async () => {
         await this.props.rootStore.MatchStore.getUsersInMatches()
         await this.props.rootStore.MatchStore.getUsersInvitedToMatches()
-        await this.props.rootStore.CitiesAndFieldsStore.getCitiesAndFields()
         await this.props.rootStore.MatchStore.getActiveMatches()
+        await this.props.rootStore.CitiesAndFieldsStore.getCitiesAndFields()
         this.props.navigation.navigate("MatchesPage")
     }
 
@@ -60,57 +62,78 @@ class MainPage extends React.Component {
         this.props.navigation.navigate('Auth');
     }
 
+    GroupsPage = async () => {
+        await this.props.rootStore.GroupsStore.getUsersInGroups()
+        await this.props.rootStore.GroupsStore.getUsersInvitedToGroups()
+        await this.props.rootStore.GroupsStore.getGroups()
+        await this.props.rootStore.FriendsStore.getFriendsTable()
+        await this.props.rootStore.CitiesAndFieldsStore.getCitiesAndFields()
+        this.props.navigation.navigate("GroupsPage")
+    }
+
     render() {
         return (
-            <Container style={{flex: 1, justifyContent: 'center', backgroundColor: 'rgb(48,48,48)'}}>
-                <Image style={{height: 190, width: 120, alignSelf: 'center'}} source = {require('../assets/Sports-Vision.png')} />
+            <Container style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgb(48,48,48)' }}>
+                <Image style={{ height: 190, width: 120, alignSelf: 'center' }} source={require('../assets/Sports-Vision.png')} />
                 <Content padder contentContainerStyle={{ flex: 1, justifyContent: 'space-evenly', flexDirection: 'row' }}>
                     <Content contentContainerStyle={{ flex: 1, justifyContent: 'space-evenly' }}>
                         <Button bordered rounded style={{
                             justifyContent: 'center',
                             borderColor: 'rgb(186, 40, 0)',
                             paddingVertical: 30,
-                            width: 120,
-                            height: 120,
+                            width: 110,
+                            height: 110,
                             borderRadius: 75,
                         }}
                             onPress={this.profilePage}>
-                            <Text style={{color: 'rgb(186, 40, 0)'}}>Profile</Text>
+                            <Text style={{ color: 'rgb(186, 40, 0)' }}>Profile</Text>
                         </Button>
                         <Button bordered rounded style={{
                             justifyContent: 'center',
                             borderColor: 'rgb(186, 40, 0)',
                             paddingVertical: 30,
-                            width: 120,
-                            height: 120,
+                            width: 110,
+                            height: 110,
                             borderRadius: 75,
                         }}
-                            onPress={this.MatchesPage}>
-                            <Text style={{color: 'rgb(186, 40, 0)'}}>Matches</Text>
+                            onPress={this.GroupsPage}>
+                            <Text style={{ color: 'rgb(186, 40, 0)' }}>Groups</Text>
                         </Button>
                     </Content>
+                    <Button bordered rounded style={{
+                        justifyContent: 'center',
+                        borderColor: 'rgb(186, 40, 0)',
+                        paddingVertical: 30,
+                        width: 110,
+                        height: 110,
+                        borderRadius: 75,
+                        alignSelf: 'center'
+                    }}
+                        onPress={this.MatchesPage}>
+                        <Text style={{ color: 'rgb(186, 40, 0)' }}>Matches</Text>
+                    </Button>
                     <Content contentContainerStyle={{ flex: 1, justifyContent: 'space-evenly', alignSelf: 'flex-end' }}>
                         <Button bordered rounded style={{
                             justifyContent: 'center',
                             borderColor: 'rgb(186, 40, 0)',
                             paddingVertical: 30,
-                            width: 120,
-                            height: 120,
+                            width: 110,
+                            height: 110,
                             borderRadius: 75,
                         }}
                             onPress={this.FriendsPage}>
-                            <Text style={{color: 'rgb(186, 40, 0)'}}>Friends</Text>
+                            <Text style={{ color: 'rgb(186, 40, 0)' }}>Friends</Text>
                         </Button>
                         <Button bordered rounded style={{
                             justifyContent: 'center',
                             borderColor: 'rgb(186, 40, 0)',
                             paddingVertical: 30,
-                            width: 120,
-                            height: 120,
+                            width: 110,
+                            height: 110,
                             borderRadius: 75,
                         }}
                             onPress={this.logout}>
-                            <Text style={{color: 'rgb(186, 40, 0)'}}>LOGOUT</Text>
+                            <Text style={{ color: 'rgb(186, 40, 0)' }}>LOGOUT</Text>
                         </Button>
                     </Content>
                 </Content>

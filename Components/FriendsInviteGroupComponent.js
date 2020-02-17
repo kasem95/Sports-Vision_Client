@@ -2,28 +2,20 @@ import React from 'react';
 import { Card, CardItem, Left, Body, Button, Right, Text, Thumbnail, Toast } from 'native-base';
 import { observer, inject } from 'mobx-react';
 
-class FriendsInviteComponent extends React.Component {
+class FriendsInviteGroupComponent extends React.Component {
 
     constructor(props) {
         super(props);
 
     }
 
-    inviteFriendToMatch = async() => {
-        let matchDate = new Date(this.props.MatchDetails.Match_Date)
+    inviteFriendToGroup = async() => {
         let details = {
-            matchID: this.props.MatchDetails.Match_ID,
+            groupID: this.props.GroupDetails.Group_ID,
             userID: this.props.userID,
-            matchDate: matchDate.getMonth() + 1
-                + '-' + matchDate.getDate() + '-' +
-                matchDate.getFullYear(),
-            matchTime: this.props.MatchDetails.Match_Time.slice(0, 5),
-            playTime: this.props.MatchDetails.Play_Time,
-            cityID: this.props.MatchDetails.City_ID,
-            fieldID: this.props.MatchDetails.Field_ID,
-            maxPlayer: this.props.MatchDetails.Max_Players,
+            maxPlayer: this.props.GroupDetails.Max_Players,
         }
-        await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Matches/InviteFriendToMatch`, {
+        await fetch(`http://ruppinmobile.tempdomain.co.il/site09/api/Groups/InviteFriendToGroup`, {
             method: 'POST',
             body: JSON.stringify(details),
             headers: {
@@ -38,11 +30,11 @@ class FriendsInviteComponent extends React.Component {
             .then(
                 async result => {
                     console.log("fetch GET= ", result);
-                    if (result === "You have invited him to join your match!") {
-                        await this.props.rootStore.MatchStore.saveLastFriendsInviteModal(this.props.MatchDetails.Match_ID);
-                        await this.props.rootStore.MatchStore.insertLastModal(this.props.MatchDetails.Match_ID)
-                        await this.props.refreshMatches()
-                        Toast.show({ text: 'You have ivnited a friend to join the match', buttonText: 'Okay', type: 'success' })
+                    if (result === "You have invited him to join your group!") {
+                        await this.props.rootStore.GroupsStore.saveLastFriendsInviteModal(this.props.GroupDetails.Group_ID);
+                        await this.props.rootStore.GroupsStore.insertLastModal(this.props.GroupDetails.Group_ID)
+                        await this.props.refreshGroups()
+                        Toast.show({ text: 'You have ivnited a friend to join the group', buttonText: 'Okay', type: 'success' })
                     }
                     else {
                         alert(result);
@@ -66,7 +58,7 @@ class FriendsInviteComponent extends React.Component {
                         </Body>
                     </Left>
                     <Right>
-                        <Button onPress={this.inviteFriendToMatch} rounded bordered rounded style={{ borderColor: 'rgb(186, 40, 0)' }}>
+                        <Button onPress={this.inviteFriendToGroup} rounded bordered rounded style={{ borderColor: 'rgb(186, 40, 0)' }}>
                             <Text style={{ color: 'rgb(186, 40, 0)' }}>INVITE</Text>
                         </Button>
                     </Right>
@@ -77,4 +69,4 @@ class FriendsInviteComponent extends React.Component {
 
 }
 
-export default inject('rootStore')(observer(FriendsInviteComponent));
+export default inject('rootStore')(observer(FriendsInviteGroupComponent));

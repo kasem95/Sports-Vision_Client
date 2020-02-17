@@ -37,7 +37,7 @@ class FriendComponent extends React.Component {
             friendID: this.props.UserID
         };
         console.log(data)
-        await fetch(`http://10.0.0.16:3000/deleteFriend`, {
+        await fetch(`http://10.0.0.19:3000/deleteFriend`, {
             method: "delete",
             body: JSON.stringify(data),
             headers: {
@@ -45,7 +45,7 @@ class FriendComponent extends React.Component {
             }
         })
             .then(res => {
-                console.log("res=", res);
+                //console.log("res=", res);
                 return res.text();
             })
             .then(
@@ -66,7 +66,7 @@ class FriendComponent extends React.Component {
             userID: this.props.UserID
         };
         console.log(data)
-        await fetch(`http://10.0.0.16:3000/acceptAddFriend`, {
+        await fetch(`http://10.0.0.19:3000/acceptAddFriend`, {
             method: "PUT",
             body: JSON.stringify(data),
             headers: {
@@ -74,7 +74,7 @@ class FriendComponent extends React.Component {
             }
         })
             .then(res => {
-                console.log("res=", res);
+                //console.log("res=", res);
                 return res.text();
             })
             .then(
@@ -97,6 +97,7 @@ class FriendComponent extends React.Component {
                         <Thumbnail style={{backgroundColor: 'rgb(204,204,204)'}} source={this.props.ProfilePIC === "" ? require('../assets/profilepicture.png') : { uri: this.props.ProfilePIC }} />
                         <Body>
                             <Text style={{ color: 'rgb(204,204,204)' }}>{this.props.Username}</Text>
+                            <Text note style={{fontSize:10}}>{this.props.Email}</Text>
                         </Body>
                     </Left>
                     {this.props.IsFriends !== 0 && <Right style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-evenly' }}>
