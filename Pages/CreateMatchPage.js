@@ -27,8 +27,7 @@ class CreateMatchPage extends React.Component {
             playTimeInvalid: false,
             keyCheckBox: false,
             key: null,
-            maxPlayers: this.props.rootStore.MatchStore.createMatchWithGroup ?
-                this.props.rootStore.GroupsStore.groupDetailsForMatchCreating.Max_Players : 4,
+            maxPlayers: 4,
             cities: [],
             fields: [],
             isDateTimePickerVisible: false,
@@ -64,6 +63,11 @@ class CreateMatchPage extends React.Component {
                     return <Picker.Item key={field.Field_ID} label={field.Field_Name} value={field.Field_ID} />
                 }),
                 numOfPlayers: numOfPlayers
+            })
+        }
+        if (this.props.rootStore.MatchStore.createMatchWithGroup){
+            this.setState({
+                maxPlayers: this.props.rootStore.GroupsStore.groupDetailsForMatchCreating.Max_Players
             })
         }
     }
