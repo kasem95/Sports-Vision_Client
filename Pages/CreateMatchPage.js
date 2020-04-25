@@ -49,9 +49,19 @@ class CreateMatchPage extends React.Component {
         this.props.navigation.setParams({ profilePage: this.profilePage, imageurl: this.props.rootStore.UserStore.user.imageURL, faceORG: this.props.rootStore.UserStore.faceORGLogin })
         let cities = this.props.rootStore.CitiesAndFieldsStore.Cities;
         let fields = this.props.rootStore.CitiesAndFieldsStore.Fields;
-        let numOfPlayers = []
-        for (let i = this.props.rootStore.GroupsStore.groupDetailsForMatchCreating.Max_Players; i <= 10; i++) {
-            numOfPlayers.push(<Picker.Item key={i} label={i.toString()} value={i} />)
+        if (this.props.rootStore.MatchStore.createMatchWithGroup) {
+            let numOfPlayers = []
+            for (let i = this.props.rootStore.GroupsStore.groupDetailsForMatchCreating.Max_Players; i <= 10; i++) {
+                numOfPlayers.push(<Picker.Item key={i} label={i.toString()} value={i} />)
+            }
+            this.setState({
+                numOfPlayers: numOfPlayers
+            })
+        }
+        else {
+            this.setState({
+                numOfPlayers: [4,5,6,7,8,9,10]
+            })
         }
         console.log(this.props.rootStore.CitiesAndFieldsStore.Cities)
         if (this._isMounted) {
@@ -61,11 +71,10 @@ class CreateMatchPage extends React.Component {
                 }),
                 fields: fields.filter(f => this.state.citySelected === f.City_ID).map(field => {
                     return <Picker.Item key={field.Field_ID} label={field.Field_Name} value={field.Field_ID} />
-                }),
-                numOfPlayers: numOfPlayers
+                })
             })
         }
-        if (this.props.rootStore.MatchStore.createMatchWithGroup){
+        if (this.props.rootStore.MatchStore.createMatchWithGroup) {
             this.setState({
                 maxPlayers: this.props.rootStore.GroupsStore.groupDetailsForMatchCreating.Max_Players
             })
